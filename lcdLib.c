@@ -9,7 +9,7 @@ static char buffer[BUFFER_SIZE];  /* must be static to be able to return it */
 static char freqBuffer[16];
 static char batVoltBuffer[8]; /* for holding battery voltage text */
 
-//static uint32_t upper, lower; /* upper=integer part, lower=fractional part */
+
 
 void lcdInit() {
 	delay_ms(100);
