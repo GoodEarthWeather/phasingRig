@@ -8,7 +8,7 @@
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROJECT.MSP430FR2476.ccxml.TI MSP430 USB1/MSP430" value="phasingRig"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_TARGET_CONFIG" value="${target_config_active_default:phasingRig}"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.C:\Users\fishi\workspace_v8\phasingRig\targetConfigs\MSP430FR2476.ccxml.TI MSP430 USB1/MSP430" value="C:/Users\fishi\workspace_v8\phasingRig\Debug\phasingRig.out"/>
-<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.MSP430FR2476.ccxml.TI MSP430 USB1/MSP430" value="C:\Users\fishi\workspace_v10\phasingRig\Debug\phasingRig.out"/>
+<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.MSP430FR2476.ccxml.TI MSP430 USB1/MSP430" value="C:\Users\fishi\Documents\git\qrp5band\phasingRig\Debug\phasingRig.out"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/phasingRig"/>
 </listAttribute>

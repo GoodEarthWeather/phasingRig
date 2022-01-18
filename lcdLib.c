@@ -1,6 +1,7 @@
 #include "driverlib.h"
 #include "lcdLib.h"
 #include "main.h"
+#include <stdlib.h>
 
 #define	LOWNIB(x)	P2OUT = (P2OUT & 0xF0) + (x & 0x0F)
 
@@ -235,7 +236,7 @@ void updateDisplay(void)
         break;
     case MENU_FUNCTION_RIT :
         lcdSetText("RIT: ",0,1);
-        result = number_to_string(ritOffset);
+        result = number_to_string((uint32_t)(abs(ritOffset)));
         (ritOffset < 0) ? (freqBuffer[0] = '-') : (freqBuffer[0] = '+');
         i = 1;
         while (*result != '\0')

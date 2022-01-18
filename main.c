@@ -171,7 +171,6 @@ void selectBand(void)
         selectSideband();
         maxBandFreq = BAND_40M_UPPER;
         minBandFreq = BAND_40M_LOWER;
-        updateDisplay();
         break;
     case BAND_30M :
         GPIO_setOutputLowOnPin(BAND_40M_SELECT);
@@ -186,7 +185,6 @@ void selectBand(void)
         selectSideband();
         maxBandFreq = BAND_30M_UPPER;
         minBandFreq = BAND_30M_LOWER;
-        updateDisplay();
         break;
     case BAND_20M :
         GPIO_setOutputLowOnPin(BAND_40M_SELECT);
@@ -201,7 +199,6 @@ void selectBand(void)
         selectSideband();
         maxBandFreq = BAND_20M_UPPER;
         minBandFreq = BAND_20M_LOWER;
-        updateDisplay();
         break;
     case BAND_17M :
         GPIO_setOutputLowOnPin(BAND_40M_SELECT);
@@ -216,7 +213,6 @@ void selectBand(void)
         selectSideband();
         maxBandFreq = BAND_17M_UPPER;
         minBandFreq = BAND_17M_LOWER;
-        updateDisplay();
         break;
     case BAND_10M :
         GPIO_setOutputLowOnPin(BAND_40M_SELECT);
@@ -231,12 +227,16 @@ void selectBand(void)
         selectSideband();
         maxBandFreq = BAND_10M_UPPER;
         minBandFreq = BAND_10M_LOWER;
-        updateDisplay();
         break;
     default :
         break;
     }
+    // reset menu function
+    ritState = DISABLED;
+    ritOffset = 0;
+    selectedMenuFunction = MENU_FUNCTION_BATVOLTAGE;
     selectAudioState(UNMUTE);
+    updateDisplay();
 }
 
 // routine to select filter
