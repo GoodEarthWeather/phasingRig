@@ -54,7 +54,8 @@ void si5351_start(void)
   // Init clock chip
   i2cSendRegister(XTAL_LOAD_CAP, 0xD2);      // Set crystal load capacitor to 10pF (default),
                                           // for bits 5:0 see also AN619 p. 60
-  i2cSendRegister(CLK_ENABLE_CONTROL, 0x00); // Enable all outputs
+ // i2cSendRegister(CLK_ENABLE_CONTROL, 0x00); // Enable all outputs
+  i2cSendRegister(CLK_ENABLE_CONTROL, 0xFE); // Enable only CLK0
   i2cSendRegister(CLK0_CONTROL, 0x0F);       // Set PLLA to CLK0, 8 mA output
   i2cSendRegister(CLK1_CONTROL, 0x2F);       // Set PLLB to CLK1, 8 mA output
   i2cSendRegister(CLK2_CONTROL, 0x2F);       // Set PLLB to CLK2, 8 mA output
@@ -194,6 +195,16 @@ void si5351_set_TX_freq(unsigned long freq)
 
 }
 
+// This routine will enable/disable the RX and TX clocks
+void si5351_RXTX_enable(void)
+{
+    extern uint8_t txKeyState;
+
+    if (txKeyState == TX_KEY_DOWN)
+        i2cSendRegister(CLK_ENABLE_CONTROL, 0xFD);  // tx clock enabled, rx clock disabled
+    else
+        i2cSendRegister(CLK_ENABLE_CONTROL, 0xFE);  // rx clock enabled, tx clock disabled
+}
 /*******************************
 int main(void)
 {

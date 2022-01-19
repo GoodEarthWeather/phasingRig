@@ -31,6 +31,7 @@ void selectMenuFunction(void);
 void si5351_start(void);
 void si5351_set_RX_freq(unsigned long);
 void si5351_set_TX_freq(unsigned long);
+void si5351_RXTX_enable(void);
 
 /////////////////////
 //Defines for Si5351
@@ -137,5 +138,8 @@ void si5351_set_TX_freq(unsigned long);
 
 #define MUTE 0x1
 #define UNMUTE 0x0
+
+#define TX_KEY_UP 0x0
+#define TX_KEY_DOWN 0x1
 
 #endif /* MYINCLUDE_MAIN_H_ */

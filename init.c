@@ -118,17 +118,17 @@ void initGPIO(void)
        GPIO_PIN1 + GPIO_PIN3 + GPIO_PIN4 + GPIO_PIN7
        );
 
-   // digit select, spot buttons
+   // digit select, spot buttons, straight key input
    GPIO_setAsInputPin(
        GPIO_PORT_P2,
-       GPIO_PIN3 + GPIO_PIN4
+       GPIO_PIN3 + GPIO_PIN4 + GPIO_PIN7
        );
 
-   // select interuppt edges
+   // select interrupt edges
    GPIO_selectInterruptEdge(GPIO_PORT_P4, GPIO_PIN0, GPIO_HIGH_TO_LOW_TRANSITION);
    GPIO_selectInterruptEdge(GPIO_PORT_P5, GPIO_PIN7, GPIO_HIGH_TO_LOW_TRANSITION);
    GPIO_selectInterruptEdge(GPIO_PORT_P3, GPIO_PIN1 + GPIO_PIN3 + GPIO_PIN4 + GPIO_PIN7, GPIO_HIGH_TO_LOW_TRANSITION);
-   GPIO_selectInterruptEdge(GPIO_PORT_P2, GPIO_PIN3 + GPIO_PIN4, GPIO_HIGH_TO_LOW_TRANSITION);
+   GPIO_selectInterruptEdge(GPIO_PORT_P2, GPIO_PIN3 + GPIO_PIN4 + GPIO_PIN7, GPIO_HIGH_TO_LOW_TRANSITION);
 
    // enable and clear interrupts
    GPIO_enableInterrupt(BTN_CWSPEED);
@@ -139,6 +139,7 @@ void initGPIO(void)
    GPIO_enableInterrupt(BTN_SPOT);
    GPIO_enableInterrupt(BTN_TUNE);
    GPIO_enableInterrupt(BTN_MENU);
+   GPIO_enableInterrupt(STRAIGHT_KEY);
 
    GPIO_clearInterrupt(BTN_CWSPEED);
    GPIO_clearInterrupt(BTN_RIT);
@@ -148,6 +149,7 @@ void initGPIO(void)
    GPIO_clearInterrupt(BTN_SPOT);
    GPIO_clearInterrupt(BTN_TUNE);
    GPIO_clearInterrupt(BTN_MENU);
+   GPIO_clearInterrupt(STRAIGHT_KEY);
 
 
    // configure transceiver outputs - default all to low output

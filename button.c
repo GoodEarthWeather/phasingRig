@@ -112,6 +112,7 @@ __interrupt void Port_3(void)
 #pragma vector=PORT2_VECTOR
 __interrupt void Port_2(void)
 {
+    extern uint8_t txKeyState;
     switch(__even_in_range(P2IV,16))
     {
       case  0: break;                         // Vector  0:  No interrupt
@@ -130,7 +131,31 @@ __interrupt void Port_2(void)
           break;                         // Vector  10:  Port 2 Bit 4
       case  12: break;                         // Vector  12:  Port 2 Bit 5
       case  14: break;                         // Vector  14:  Port 2 Bit 6
-      case  16: break;                         // Vector  16:  Port 2 Bit 7
+      case  16:
+          // P2.7 = straight key input - i.e. cw keyer input
+          if (txKeyState == TX_KEY_UP)
+          {
+              // key must have been pressed
+              txKeyState = TX_KEY_DOWN;  // to indicate key down
+              GPIO_clearInterrupt(STRAIGHT_KEY);
+              P2IES ^= BIT7;  // change interrupt edge to detect when key has been released
+              // now enable transmit
+              selectAudioState(MUTE);
+              si5351_RXTX_enable();
+              GPIO_setOutputHighOnPin(CW_OUT);
+          }
+          else
+          {
+              // key was released
+              txKeyState = TX_KEY_UP;  // to indicate key up
+              GPIO_clearInterrupt(STRAIGHT_KEY);
+              P2IES ^= BIT7;  // change interrupt edge to detect when key has been pressed
+              // now enable receive
+              selectAudioState(UNMUTE);
+              si5351_RXTX_enable();
+              GPIO_setOutputLowOnPin(CW_OUT);
+          }
+          break;                         // Vector  16:  Port 2 Bit 7
       default: break;
     }
 }

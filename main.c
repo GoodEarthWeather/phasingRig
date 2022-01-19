@@ -13,9 +13,10 @@ uint16_t batteryVoltage;
 uint32_t maxBandFreq;
 uint32_t minBandFreq;
 uint8_t selectedMenuFunction;
-uint8_t txState;
+uint8_t txKeyState;
 uint8_t ritState;
 int16_t ritOffset;
+
 
 int main(void) {
 
@@ -31,7 +32,7 @@ int main(void) {
     si5351_start();
 
     // disable TX and RIT
-    txState = DISABLED;
+    txKeyState = TX_KEY_UP; // means not transmitting
     ritState = DISABLED;
     ritOffset = 0;
 
