@@ -54,12 +54,12 @@ void si5351_start(void)
   // Init clock chip
   i2cSendRegister(XTAL_LOAD_CAP, 0xD2);      // Set crystal load capacitor to 10pF (default),
                                           // for bits 5:0 see also AN619 p. 60
- // i2cSendRegister(CLK_ENABLE_CONTROL, 0x00); // Enable all outputs
-  i2cSendRegister(CLK_ENABLE_CONTROL, 0xFE); // Enable only CLK0
+  i2cSendRegister(CLK_ENABLE_CONTROL, 0xFF); // Disable all outputs
   i2cSendRegister(CLK0_CONTROL, 0x0F);       // Set PLLA to CLK0, 8 mA output
   i2cSendRegister(CLK1_CONTROL, 0x2F);       // Set PLLB to CLK1, 8 mA output
   i2cSendRegister(CLK2_CONTROL, 0x2F);       // Set PLLB to CLK2, 8 mA output
   i2cSendRegister(PLL_RESET, 0xA0);          // Reset PLLA and PLLB
+  i2cSendRegister(CLK_ENABLE_CONTROL, 0xFE); // Enable only CLK0
 
   // Set VCOs of PLLA and PLLB to 891 MHz
   a = 33;           // Division factor 900/27 MHz
