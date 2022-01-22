@@ -51,6 +51,9 @@ void si5351_start(void)
   unsigned long a, b, c;
   unsigned long p1, p2, p3;
 
+  // wait until si5351 device status register (0x00) indicates system is ready
+  initsi5351();
+
   // Init clock chip
   i2cSendRegister(XTAL_LOAD_CAP, 0xD2);      // Set crystal load capacitor to 10pF (default),
                                           // for bits 5:0 see also AN619 p. 60

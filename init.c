@@ -223,6 +223,8 @@ void initADC(void)
     //If ref voltage no ready, WAIT
     while (PMM_REFGEN_NOTREADY ==
             PMM_getVariableReferenceVoltageStatus()) ;
+
+    ADC_disable(ADC_BASE);
 }
 
 

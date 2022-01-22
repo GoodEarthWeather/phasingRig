@@ -32,6 +32,7 @@ void si5351_start(void);
 void si5351_set_RX_freq(unsigned long);
 void si5351_set_TX_freq(unsigned long);
 void si5351_RXTX_enable(void);
+void initsi5351(void);
 
 /////////////////////
 //Defines for Si5351
@@ -39,6 +40,7 @@ void si5351_RXTX_enable(void);
 #define SI5351_ADDRESS 0x60
 
 //Set of Si5351A register addresses
+#define DEVICE_STATUS            0
 #define CLK_ENABLE_CONTROL       3
 #define PLLX_SRC                15
 #define CLK0_CONTROL            16

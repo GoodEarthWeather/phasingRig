@@ -7,6 +7,7 @@
 #include <si5351a.h>
 #include "driverlib.h"
 #include "main.h"
+#include "i2c.h"
 
 // define types of measurements
 #define I2C_RECEIVE 0
@@ -69,6 +70,14 @@ void USCIB0_ISR(void)
     }
 }
 
+void initsi5351(void)
+{
+    do {
+        i2cSendRegister(DEVICE_STATUS,0);  // write address of status register
+        RXData[0] = 0;
+        i2cReceiveData();
+    } while (RXData[0] & 0x80);  // keep doing this until SYS_INIT bit is low
+}
 
 /**************** I2C Send Command ******************/
 // This routine will send I2C data - it will send two bytes - the register and the data
@@ -107,10 +116,10 @@ void i2cSendRegister(uint8_t reg, uint8_t data)
     while (EUSCI_B_I2C_SENDING_STOP == EUSCI_B_I2C_masterIsStopSent
             (EUSCI_B0_BASE));
 
-    // start by sending first byte
     TXData[0] = reg;
     TXData[1] = data;
-    byteCount = 2;
+    ( reg == DEVICE_STATUS ) ? (byteCount = 1) : (byteCount = 2);
+
     EUSCI_B_I2C_masterSendMultiByteStart(EUSCI_B0_BASE, TXData[0]);
     // now sleep while I2C block sends all the data
     __bis_SR_register(LPM0_bits + GIE);
@@ -118,16 +127,21 @@ void i2cSendRegister(uint8_t reg, uint8_t data)
     while(EUSCI_B_I2C_isBusBusy(EUSCI_B0_BASE)) {;}
 }
 
-/*
-*************** I2C Receive Command *****************
+
+/*************** I2C Receive Command *****************/
 // This routine will receive I2C data
 // address is the slave address
 // received data is put into RXData vector
 // set byteCount to the number of bytes to receive
-static void I2CReceiveCommand(uint8_t address)
+static void i2cReceiveData(void)
 {
 
     I2CMode = I2C_RECEIVE;
+
+    // for the si5351, only one receive function is ever used - reading the device status register
+    // so can always set byteCount to be 1
+    byteCount = 1;
+
     // Set up I2C block for reception
     EUSCI_B_I2C_initMasterParam param = {0};
     param.selectClockSource = EUSCI_B_I2C_CLOCKSOURCE_SMCLK;
@@ -138,7 +152,7 @@ static void I2CReceiveCommand(uint8_t address)
     EUSCI_B_I2C_initMaster(EUSCI_B0_BASE, &param);
 
     //Specify slave address
-    EUSCI_B_I2C_setSlaveAddress(EUSCI_B0_BASE, address);
+    EUSCI_B_I2C_setSlaveAddress(EUSCI_B0_BASE, SI5351_ADDRESS);
     //Set Master in receive mode
     EUSCI_B_I2C_setMode(EUSCI_B0_BASE, EUSCI_B_I2C_RECEIVE_MODE);
     //Enable I2C Module to start operations
@@ -165,4 +179,4 @@ static void I2CReceiveCommand(uint8_t address)
     // now sleep while I2C block receives all the data
     __bis_SR_register(LPM0_bits + GIE);
 }
-*/
+

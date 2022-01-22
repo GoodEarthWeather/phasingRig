@@ -23,12 +23,12 @@ int main(void) {
     uint32_t deltaFreq;
     extern uint8_t volatile buttonPressed;
 
-
     WDT_A_hold(WDT_A_BASE);
     initGPIO();
     initClocks();
     lcdInit();
     initADC();
+
     si5351_start();
 
     // disable TX and RIT
@@ -303,9 +303,11 @@ void selectMenuFunction(void)
 void getBatteryVoltage(void)
 {
 
+    ADC_enable(ADC_BASE);
     // start ADC conversion
     ADC_startConversion(ADC_BASE,ADC_SINGLECHANNEL);
     while (ADC_isBusy(ADC_BASE) == ADC_BUSY) {;}
+    ADC_disable(ADC_BASE);
 
     // get results
     batteryVoltage = (uint16_t)ADC_getResults(ADC_BASE);
