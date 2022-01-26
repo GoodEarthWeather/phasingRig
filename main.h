@@ -27,6 +27,8 @@ void getBatteryVoltage(void);
 void initADC(void);
 void selectMenuFunction(void);
 
+void i2cSendRegister(uint8_t reg, uint8_t data);
+
 //  SI5351 Declarations
 void si5351_start(void);
 void si5351_set_RX_freq(unsigned long);
@@ -80,6 +82,7 @@ void initsi5351(void);
 #define DIT_KEY GPIO_PORT_P4, GPIO_PIN1
 #define DAH_KEY GPIO_PORT_P4, GPIO_PIN2
 #define STRAIGHT_KEY GPIO_PORT_P2, GPIO_PIN7
+//#define STRAIGHT_KEY GPIO_PORT_P4, GPIO_PIN2
 #define TR_SWITCH GPIO_PORT_P3, GPIO_PIN5
 #define CW_OUT GPIO_PORT_P3, GPIO_PIN2
 #define TR_MUTE GPIO_PORT_P3, GPIO_PIN6

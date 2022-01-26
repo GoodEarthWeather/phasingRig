@@ -14,6 +14,7 @@ uint32_t maxBandFreq;
 uint32_t minBandFreq;
 uint8_t selectedMenuFunction;
 uint8_t txKeyState;
+uint8_t keyStateChanged;
 uint8_t ritState;
 int16_t ritOffset;
 
@@ -32,6 +33,7 @@ int main(void) {
     si5351_start();
 
     // disable TX and RIT
+    keyStateChanged = 0;
     txKeyState = TX_KEY_UP; // means not transmitting
     ritState = DISABLED;
     ritOffset = 0;
@@ -52,6 +54,8 @@ int main(void) {
     si5351_set_RX_freq(si5351FreqOut<<2);
     si5351_set_TX_freq(si5351FreqOut);
 
+    //while(1) ;
+
     // setup encoder variables
     encoderCWCount = 0;
     encoderCCWCount = 0;
@@ -60,6 +64,13 @@ int main(void) {
     __bis_SR_register(GIE);
     while (1)
     {
+        // check if keyed
+        if (keyStateChanged == 1)
+        {
+            keyStateChanged = 0;
+            si5351_RXTX_enable();
+        }
+
         // check encoder
         if ((encoderCWCount != 0) || (encoderCCWCount != 0))  // if true, the encoder knob was turned
         {
@@ -307,10 +318,9 @@ void getBatteryVoltage(void)
     // start ADC conversion
     ADC_startConversion(ADC_BASE,ADC_SINGLECHANNEL);
     while (ADC_isBusy(ADC_BASE) == ADC_BUSY) {;}
-    ADC_disable(ADC_BASE);
 
     // get results
     batteryVoltage = (uint16_t)ADC_getResults(ADC_BASE);
-
+    ADC_disable(ADC_BASE);
 }
 

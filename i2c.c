@@ -4,17 +4,18 @@
  *  Created on: May 16, 2018
  *      Author: dmcneill
  */
-#include <si5351a.h>
+//#include <si5351a.h>
 #include "driverlib.h"
 #include "main.h"
-#include "i2c.h"
+
+void i2cReceiveData(void);
 
 // define types of measurements
 #define I2C_RECEIVE 0
 #define I2C_SEND 1
 
-static uint8_t RXData[2];  // used by interrupt routine to hold received data
-static uint8_t TXData[2];
+static uint8_t RXData[4];  // used by interrupt routine to hold received data
+static uint8_t TXData[4];
 static uint8_t byteCount;
 static uint8_t I2CMode;  // indicate whether I2C is sending or receiving
 
@@ -133,7 +134,7 @@ void i2cSendRegister(uint8_t reg, uint8_t data)
 // address is the slave address
 // received data is put into RXData vector
 // set byteCount to the number of bytes to receive
-static void i2cReceiveData(void)
+void i2cReceiveData(void)
 {
 
     I2CMode = I2C_RECEIVE;

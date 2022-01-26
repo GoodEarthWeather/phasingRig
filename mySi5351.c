@@ -29,7 +29,6 @@
 // Modified by David McNeill 16-Jan-2022
 
 #include "main.h"
-#include "i2c.h"
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>

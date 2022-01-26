@@ -13,6 +13,10 @@
 void initClocks(void)
 {
 
+    // Configure one FRAM waitstate as required by the device datasheet for MCLK
+    // operation beyond 8MHz _before_ configuring the clock system.
+    FRAMCtl_configureWaitStateControl(FRAMCTL_ACCESS_TIME_CYCLES_1);
+
     //Initialize external 32.768kHz clock
     CS_setExternalClockSource(32768);
     CS_turnOnXT1LF(CS_XT1_DRIVE_3);
@@ -26,6 +30,9 @@ void initClocks(void)
     CS_initClockSignal(CS_SMCLK,CS_DCOCLKDIV_SELECT,CS_CLOCK_DIVIDER_1);
     //Set MCLK = DCO with frequency divider of 1
     CS_initClockSignal(CS_MCLK,CS_DCOCLKDIV_SELECT,CS_CLOCK_DIVIDER_1);
+
+    //Clear all OSC fault flag
+    CS_clearAllOscFlagsWithTimeout(1000);
 }
 
 // initialize GPIO
@@ -50,6 +57,7 @@ void initGPIO(void)
        GPIO_PIN0 + GPIO_PIN1,
        GPIO_PRIMARY_MODULE_FUNCTION
    );
+
 
    // Configure P1.1 (A1) as analog ADC input
    GPIO_setAsPeripheralModuleFunctionInputPin(
@@ -130,27 +138,6 @@ void initGPIO(void)
    GPIO_selectInterruptEdge(GPIO_PORT_P3, GPIO_PIN1 + GPIO_PIN3 + GPIO_PIN4 + GPIO_PIN7, GPIO_HIGH_TO_LOW_TRANSITION);
    GPIO_selectInterruptEdge(GPIO_PORT_P2, GPIO_PIN3 + GPIO_PIN4 + GPIO_PIN7, GPIO_HIGH_TO_LOW_TRANSITION);
 
-   // enable and clear interrupts
-   GPIO_enableInterrupt(BTN_CWSPEED);
-   GPIO_enableInterrupt(BTN_RIT);
-   GPIO_enableInterrupt(BTN_DIGIT_SELECT);
-   GPIO_enableInterrupt(BTN_FILTER_SELECT);
-   GPIO_enableInterrupt(BTN_BAND_SELECT);
-   GPIO_enableInterrupt(BTN_SPOT);
-   GPIO_enableInterrupt(BTN_TUNE);
-   GPIO_enableInterrupt(BTN_MENU);
-   GPIO_enableInterrupt(STRAIGHT_KEY);
-
-   GPIO_clearInterrupt(BTN_CWSPEED);
-   GPIO_clearInterrupt(BTN_RIT);
-   GPIO_clearInterrupt(BTN_DIGIT_SELECT);
-   GPIO_clearInterrupt(BTN_FILTER_SELECT);
-   GPIO_clearInterrupt(BTN_BAND_SELECT);
-   GPIO_clearInterrupt(BTN_SPOT);
-   GPIO_clearInterrupt(BTN_TUNE);
-   GPIO_clearInterrupt(BTN_MENU);
-   GPIO_clearInterrupt(STRAIGHT_KEY);
-
 
    // configure transceiver outputs - default all to low output
    GPIO_setAsOutputPin(TR_SWITCH);
@@ -174,6 +161,30 @@ void initGPIO(void)
 
    GPIO_setAsOutputPin(FILTER_SELECT);
    GPIO_setAsOutputPin(SIDEBAND_SELECT);
+
+
+   // enable and clear interrupts
+   GPIO_enableInterrupt(BTN_CWSPEED);
+   GPIO_enableInterrupt(BTN_RIT);
+   GPIO_enableInterrupt(BTN_DIGIT_SELECT);
+   GPIO_enableInterrupt(BTN_FILTER_SELECT);
+   GPIO_enableInterrupt(BTN_BAND_SELECT);
+   GPIO_enableInterrupt(BTN_SPOT);
+   GPIO_enableInterrupt(BTN_TUNE);
+   GPIO_enableInterrupt(BTN_MENU);
+   GPIO_enableInterrupt(STRAIGHT_KEY);
+
+   GPIO_clearInterrupt(BTN_CWSPEED);
+   GPIO_clearInterrupt(BTN_RIT);
+   GPIO_clearInterrupt(BTN_DIGIT_SELECT);
+   GPIO_clearInterrupt(BTN_FILTER_SELECT);
+   GPIO_clearInterrupt(BTN_BAND_SELECT);
+   GPIO_clearInterrupt(BTN_SPOT);
+   GPIO_clearInterrupt(BTN_TUNE);
+   GPIO_clearInterrupt(BTN_MENU);
+   GPIO_clearInterrupt(STRAIGHT_KEY);
+
+
 
    /*
     * Disable the GPIO power-on default high-impedance mode to activate
