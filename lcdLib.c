@@ -9,7 +9,10 @@
 static char buffer[BUFFER_SIZE];  /* must be static to be able to return it */
 static char freqBuffer[16];
 static char batVoltBuffer[8]; /* for holding battery voltage text */
+static char cwSpeedBuffer[8]; /* for holding cw speed text */
 
+void setCWSpeedText(void);
+void setBatVoltText(void);
 
 
 void lcdInit() {
@@ -231,8 +234,8 @@ void updateDisplay(void)
         setBatVoltText();
         break;
     case MENU_FUNCTION_CWSPEED :
-        lcdSetText("CWSPD: ",0,1);
-        // call function to get cw speed
+        getCWSpeed();
+        setCWSpeedText();
         break;
     case MENU_FUNCTION_RIT :
         lcdSetText("RIT: ",0,1);
@@ -252,29 +255,31 @@ void updateDisplay(void)
         break;
     }
 
-
-
     // display filter selection
     if (selectedFilter == SSB_FILTER)
         lcdSetText("SSB",0xD,1);
     else
         lcdSetText("CW",0xE,1);
-
     moveFreqCursor();
 }
 
 /* This routine will take the battery voltage and convert it to text for the LCD */
 void setBatVoltText(void)
 {
-    uint32_t x;
-    uint32_t upper, lower; /* upper=integer part, lower=fractional part */
+    //uint32_t x;
+    //uint32_t upper, lower; /* upper=integer part, lower=fractional part */
     uint32_t result;
     extern uint16_t batteryVoltage;
     char *txt;
+    float z;
 
     // assume external resistor divider is 0.1 and full scale is 1.5V
     // ((batteryVoltage * 1.5/0.1) * 65536)/4096 = batteryVoltage * 240
     // Actual resistor divider is about 0.098, not 0.1, so 245 is used instead of 240
+
+    z = ((float)batteryVoltage/4096.0)*1.5/0.098;
+    result = (uint32_t)(z*100.0);
+    /*************************
     x = (uint32_t)batteryVoltage * 245;
     upper = (x >> 16);
     lower = (x & 0xffff) >> 12;
@@ -292,6 +297,7 @@ void setBatVoltText(void)
     // round up
     if ( (result & 0b0111) >= 5 )
         result += 10;
+    ******************************/
 
     /* now convert to string */
     txt = number_to_string(result);
@@ -301,18 +307,43 @@ void setBatVoltText(void)
     {
         batVoltBuffer[1] = '.';
         batVoltBuffer[2] = *txt++;
-        batVoltBuffer[3] = ' ';
-        batVoltBuffer[4] = 'V';
-        batVoltBuffer[5] = '\0';
+        batVoltBuffer[3] = *txt++;
+        batVoltBuffer[4] = ' ';
+        batVoltBuffer[5] = 'V';
+        batVoltBuffer[6] = '\0';
     }
     else
     {
         batVoltBuffer[1] = *txt++;
         batVoltBuffer[2] = '.';
         batVoltBuffer[3] = *txt++;
-        batVoltBuffer[4] = ' ';
-        batVoltBuffer[5] = 'V';
-        batVoltBuffer[6] = '\0';
+        batVoltBuffer[4] = *txt++;
+        batVoltBuffer[5] = ' ';
+        batVoltBuffer[6] = 'V';
+        batVoltBuffer[7] = '\0';
     }
     lcdSetText(batVoltBuffer,0,1);
+}
+
+/* This routine will take the battery voltage and convert it to text for the LCD */
+void setCWSpeedText(void)
+{
+    extern uint8_t wpm;
+    char *txt;
+
+
+    lcdSetText("CWSPD: ",0,1);
+
+    /* now convert to string */
+    txt = number_to_string((uint32_t)wpm);
+
+    cwSpeedBuffer[0] = *txt++;
+    if (wpm > 9)
+    {
+        cwSpeedBuffer[1] = *txt++;
+        cwSpeedBuffer[2] = '\0';
+    }  else {
+        cwSpeedBuffer[1] = '\0';
+    }
+    lcdSetText(cwSpeedBuffer,7,1);
 }

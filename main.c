@@ -17,18 +17,24 @@ uint8_t txKeyState;
 uint8_t keyStateChanged;
 uint8_t ritState;
 int16_t ritOffset;
+uint8_t wpm;
 
 
 int main(void) {
 
     uint32_t deltaFreq;
     extern uint8_t volatile buttonPressed;
+    uint8_t temp;
 
     WDT_A_hold(WDT_A_BASE);
     initGPIO();
     initClocks();
     lcdInit();
-    initADC();
+
+    // measure cw speed pot to get initial wpm setting
+    initADC(CWSPEED_MEASUREMENT);
+    getCWSpeed();
+    initADC(BATTERY_MEASUREMENT);
 
     si5351_start();
 
@@ -39,7 +45,7 @@ int main(void) {
     ritOffset = 0;
 
     // set defaults
-    freqMultiplier = 1;
+    freqMultiplier = 10;
     selectedBand = BAND_40M;
     selectedFilter = SSB_FILTER;
     selectedSideband = LOWER_SIDEBAND;
@@ -149,7 +155,7 @@ int main(void) {
         case BTN_PRESSED_DIGIT_SELECT :
             if (freqMultiplier == 10000)
             {
-                freqMultiplier = 1;
+                freqMultiplier = 10;
             }
             else
             {
@@ -159,7 +165,17 @@ int main(void) {
             buttonPressed = BTN_PRESSED_NONE;
             break;
         default :
+            // if no buttons have been pressed and selected menu function is CW speed, need to check if pot has moved and update display if so
             break;
+        }
+        if (selectedMenuFunction == MENU_FUNCTION_CWSPEED)
+        {
+            temp = wpm; // save current wpm
+            getCWSpeed();
+            if ( wpm != temp)  // if not equal, CW speed pot must have changed, so update display
+            {
+                updateDisplay();
+            }
         }
     }
 }
@@ -292,8 +308,10 @@ void selectMenuFunction(void)
         // this function will just display the current sideband; no changing of sideband
         break;
     case MENU_FUNCTION_BATVOLTAGE :
+        initADC(BATTERY_MEASUREMENT);
         break;
     case MENU_FUNCTION_CWSPEED :
+        initADC(CWSPEED_MEASUREMENT);
         break;
     case MENU_FUNCTION_RIT :
         ritState = ENABLED;
@@ -324,3 +342,21 @@ void getBatteryVoltage(void)
     ADC_disable(ADC_BASE);
 }
 
+// routine to measure CW speed pot
+void getCWSpeed(void)
+{
+    uint16_t cwSpeedVoltage;
+
+    ADC_enable(ADC_BASE);
+    // start ADC conversion
+    ADC_startConversion(ADC_BASE,ADC_SINGLECHANNEL);
+    while (ADC_isBusy(ADC_BASE) == ADC_BUSY) {;}
+
+    // get results
+    cwSpeedVoltage = (uint16_t)ADC_getResults(ADC_BASE);
+    ADC_disable(ADC_BASE);
+
+    // compute wpm
+    wpm = ((25*cwSpeedVoltage)/888 + 3);
+
+}

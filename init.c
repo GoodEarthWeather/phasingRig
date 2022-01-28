@@ -193,8 +193,8 @@ void initGPIO(void)
    PMM_unlockLPM5();
 }
 
-// Initialize ADC
-void initADC(void)
+// Initialize ADC for measuring battery voltage or CW speed pot
+void initADC(uint8_t measureType)
 {
     ADC_init(ADC_BASE,
         ADC_SAMPLEHOLDSOURCE_SC,
@@ -216,13 +216,20 @@ void initADC(void)
      * Use positive reference of Internally generated Vref
      * Use negative reference of AVss
      */
-    ADC_configureMemory(ADC_BASE,
+    if ( measureType == BATTERY_MEASUREMENT)
+    {
+        ADC_configureMemory(ADC_BASE,
         ADC_INPUT_A1,
         ADC_VREFPOS_INT,
         ADC_VREFNEG_AVSS);
-
-    // set ADC resolution
-    ADC_setResolution (ADC_BASE, ADC_RESOLUTION_12BIT);
+        ADC_setResolution (ADC_BASE, ADC_RESOLUTION_12BIT);
+    } else {  // CW speed measurement
+        ADC_configureMemory(ADC_BASE,
+        ADC_INPUT_A4,
+        ADC_VREFPOS_INT,
+        ADC_VREFNEG_AVSS);
+        ADC_setResolution (ADC_BASE, ADC_RESOLUTION_10BIT);
+    }
 
     //Internal Reference ON
     PMM_enableInternalReference();

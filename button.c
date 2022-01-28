@@ -143,7 +143,7 @@ __interrupt void Port_2(void)
               GPIO_clearInterrupt(STRAIGHT_KEY);
               P2IES ^= BIT7;  // change interrupt edge to detect when key has been released
               // now enable transmit
-              selectAudioState(MUTE);
+              //selectAudioState(MUTE);
               GPIO_setOutputHighOnPin(CW_OUT);
           }
           else
@@ -153,7 +153,7 @@ __interrupt void Port_2(void)
               GPIO_clearInterrupt(STRAIGHT_KEY);
               P2IES ^= BIT7;  // change interrupt edge to detect when key has been pressed
               // now enable receive
-              selectAudioState(UNMUTE);
+              //selectAudioState(UNMUTE);
               GPIO_setOutputLowOnPin(CW_OUT);
           }
 

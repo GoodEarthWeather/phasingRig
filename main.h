@@ -24,8 +24,9 @@ void selectSideband(void);
 void selectAudioState(uint8_t);
 void setBatVoltText(void);
 void getBatteryVoltage(void);
-void initADC(void);
+void initADC(uint8_t);
 void selectMenuFunction(void);
+void getCWSpeed(void);
 
 void i2cSendRegister(uint8_t reg, uint8_t data);
 
@@ -70,6 +71,7 @@ void initsi5351(void);
 
 //#define LED1 GPIO_PORT_P1, GPIO_PIN1
 #define VBAT_SNS GPIO_PORT_P1, GPIO_PIN1
+#define CWSPEED_SNS GPIO_PORT_P1, GPIO_PIN4
 
 #define BTN_CWSPEED GPIO_PORT_P5, GPIO_PIN7
 #define BTN_RIT GPIO_PORT_P3, GPIO_PIN3
@@ -82,7 +84,6 @@ void initsi5351(void);
 #define DIT_KEY GPIO_PORT_P4, GPIO_PIN1
 #define DAH_KEY GPIO_PORT_P4, GPIO_PIN2
 #define STRAIGHT_KEY GPIO_PORT_P2, GPIO_PIN7
-//#define STRAIGHT_KEY GPIO_PORT_P4, GPIO_PIN2
 #define TR_SWITCH GPIO_PORT_P3, GPIO_PIN5
 #define CW_OUT GPIO_PORT_P3, GPIO_PIN2
 #define TR_MUTE GPIO_PORT_P3, GPIO_PIN6
@@ -146,5 +147,8 @@ void initsi5351(void);
 
 #define TX_KEY_UP 0x0
 #define TX_KEY_DOWN 0x1
+
+#define BATTERY_MEASUREMENT 0x0
+#define CWSPEED_MEASUREMENT 0x1
 
 #endif /* MYINCLUDE_MAIN_H_ */
