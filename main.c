@@ -164,6 +164,14 @@ int main(void) {
             moveFreqCursor();
             buttonPressed = BTN_PRESSED_NONE;
             break;
+        case BTN_PRESSED_ENCODER :
+            (ritState == DISABLED) ? (ritState = ENABLED) : (ritState = DISABLED);
+            ritOffset = 0;
+            si5351_set_RX_freq(si5351FreqOut<<2);  //put RX frequency back to same as TX freq.
+            freqMultiplier = 100;
+            updateDisplay();
+            buttonPressed = BTN_PRESSED_NONE;
+            break;
         default :
             // if no buttons have been pressed and selected menu function is CW speed, need to check if pot has moved and update display if so
             break;
@@ -313,13 +321,7 @@ void selectMenuFunction(void)
     case MENU_FUNCTION_CWSPEED :
         initADC(CWSPEED_MEASUREMENT);
         break;
-    case MENU_FUNCTION_RIT :
-        ritState = ENABLED;
-        ritOffset = 0;
-        break;
     case MENU_FUNCTION_MUTE :
-        ritState = DISABLED;
-        ritOffset = 0;
         selectAudioState(MUTE);
         break;
     default :

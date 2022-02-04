@@ -2,6 +2,7 @@
 #include "lcdLib.h"
 #include "main.h"
 #include <stdlib.h>
+#include <math.h>
 
 #define	LOWNIB(x)	P2OUT = (P2OUT & 0xF0) + (x & 0x0F)
 
@@ -10,6 +11,7 @@ static char buffer[BUFFER_SIZE];  /* must be static to be able to return it */
 static char freqBuffer[16];
 static char batVoltBuffer[8]; /* for holding battery voltage text */
 static char cwSpeedBuffer[8]; /* for holding cw speed text */
+static char ritStateBuffer[16];
 
 void setCWSpeedText(void);
 void setBatVoltText(void);
@@ -164,6 +166,7 @@ void updateDisplay(void)
     extern uint16_t batteryVoltage;
     extern uint8_t selectedMenuFunction;
     extern int16_t ritOffset;
+    extern uint8_t ritState;
     uint8_t i;
 
     lcdClear();
@@ -220,39 +223,42 @@ void updateDisplay(void)
         break;
     }
 
-    // display menu function
-    switch (selectedMenuFunction)
+    // display menu function if RIT is not enabled
+    if (ritState == ENABLED)
     {
-    case MENU_FUNCTION_SIDEBAND :
-        if (selectedSideband == UPPER_SIDEBAND)
-            lcdSetText("USB",0,1);
-        else
-            lcdSetText("LSB",0,1);
-        break;
-    case MENU_FUNCTION_BATVOLTAGE :
-        getBatteryVoltage();
-        setBatVoltText();
-        break;
-    case MENU_FUNCTION_CWSPEED :
-        getCWSpeed();
-        setCWSpeedText();
-        break;
-    case MENU_FUNCTION_RIT :
         lcdSetText("RIT: ",0,1);
         result = number_to_string((uint32_t)(abs(ritOffset)));
-        (ritOffset < 0) ? (freqBuffer[0] = '-') : (freqBuffer[0] = '+');
+        (ritOffset < 0) ? (ritStateBuffer[0] = '-') : (ritStateBuffer[0] = '+');
         i = 1;
         while (*result != '\0')
-            freqBuffer[i++] = *result++;
-        freqBuffer[i] = '\0';
-        lcdSetText(freqBuffer,5,1);
-        // call function to handle rit
-        break;
-    case MENU_FUNCTION_MUTE :
-        lcdSetText("MUTE",0,1);
-        break;
-    default :
-        break;
+            ritStateBuffer[i++] = *result++;
+        ritStateBuffer[i] = '\0';
+        lcdSetText(ritStateBuffer,5,1);
+    }
+    else
+    {
+        switch (selectedMenuFunction)
+        {
+        case MENU_FUNCTION_SIDEBAND :
+            if (selectedSideband == UPPER_SIDEBAND)
+                lcdSetText("USB",0,1);
+            else
+                lcdSetText("LSB",0,1);
+            break;
+        case MENU_FUNCTION_BATVOLTAGE :
+            getBatteryVoltage();
+            setBatVoltText();
+            break;
+        case MENU_FUNCTION_CWSPEED :
+            getCWSpeed();
+            setCWSpeedText();
+            break;
+        case MENU_FUNCTION_MUTE :
+            lcdSetText("MUTE",0,1);
+            break;
+        default :
+            break;
+        }
     }
 
     // display filter selection
@@ -278,49 +284,27 @@ void setBatVoltText(void)
     // Actual resistor divider is about 0.098, not 0.1, so 245 is used instead of 240
 
     z = ((float)batteryVoltage/4096.0)*1.5/0.098;
-    result = (uint32_t)(z*100.0);
-    /*************************
-    x = (uint32_t)batteryVoltage * 245;
-    upper = (x >> 16);
-    lower = (x & 0xffff) >> 12;
-
-    result = upper * 100;
-    if (lower & 0b1000)
-        result += 50;
-    if (lower & 0b0100)
-        result += 25;
-    if ( lower & 0b0010)
-        result += 12;
-    if ( lower & 0b0001)
-        result += 6;
-
-    // round up
-    if ( (result & 0b0111) >= 5 )
-        result += 10;
-    ******************************/
-
+    result = (uint32_t)(round(z*10.0));
     /* now convert to string */
     txt = number_to_string(result);
 
     batVoltBuffer[0] = *txt++;
-    if ( result < 1000)
+    if ( result < 100)
     {
         batVoltBuffer[1] = '.';
         batVoltBuffer[2] = *txt++;
-        batVoltBuffer[3] = *txt++;
-        batVoltBuffer[4] = ' ';
-        batVoltBuffer[5] = 'V';
-        batVoltBuffer[6] = '\0';
+        batVoltBuffer[3] = ' ';
+        batVoltBuffer[4] = 'V';
+        batVoltBuffer[5] = '\0';
     }
     else
     {
         batVoltBuffer[1] = *txt++;
         batVoltBuffer[2] = '.';
         batVoltBuffer[3] = *txt++;
-        batVoltBuffer[4] = *txt++;
-        batVoltBuffer[5] = ' ';
-        batVoltBuffer[6] = 'V';
-        batVoltBuffer[7] = '\0';
+        batVoltBuffer[4] = ' ';
+        batVoltBuffer[5] = 'V';
+        batVoltBuffer[6] = '\0';
     }
     lcdSetText(batVoltBuffer,0,1);
 }
