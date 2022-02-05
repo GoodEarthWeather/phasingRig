@@ -18,6 +18,7 @@ uint8_t keyStateChanged;
 uint8_t ritState;
 int16_t ritOffset;
 uint8_t wpm;
+uint8_t audioState;
 
 
 int main(void) {
@@ -30,6 +31,7 @@ int main(void) {
     initGPIO();
     initClocks();
     lcdInit();
+
 
     // measure cw speed pot to get initial wpm setting
     initADC(CWSPEED_MEASUREMENT);
@@ -45,6 +47,7 @@ int main(void) {
     ritOffset = 0;
 
     // set defaults
+
     freqMultiplier = 10;
     selectedBand = BAND_40M;
     selectedFilter = SSB_FILTER;
@@ -60,7 +63,8 @@ int main(void) {
     si5351_set_RX_freq(si5351FreqOut<<2);
     si5351_set_TX_freq(si5351FreqOut);
 
-    //while(1) ;
+    // now unmute audio
+    audioState = UNMUTE;
 
     // setup encoder variables
     encoderCWCount = 0;
@@ -113,7 +117,9 @@ int main(void) {
         case BTN_PRESSED_CWSPEED :
             buttonPressed = BTN_PRESSED_NONE;
             break;
-        case BTN_PRESSED_RIT :
+        case BTN_PRESSED_MUTE :
+            (audioState == MUTE) ? (audioState = UNMUTE) : (audioState = MUTE);
+            selectAudioState(audioState);
             buttonPressed = BTN_PRESSED_NONE;
             break;
             /*
@@ -148,7 +154,7 @@ int main(void) {
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_MENU :
-            (selectedMenuFunction == MENU_FUNCTION_MUTE) ? (selectedMenuFunction = MENU_FUNCTION_SIDEBAND) : selectedMenuFunction++;
+            (selectedMenuFunction == MENU_FUNCTION_CWSPEED) ? (selectedMenuFunction = MENU_FUNCTION_SIDEBAND) : selectedMenuFunction++;
             selectMenuFunction();
             buttonPressed = BTN_PRESSED_NONE;
             break;
@@ -304,6 +310,7 @@ void selectAudioState(uint8_t state)
         GPIO_setOutputHighOnPin(TR_MUTE); // set high for mute pin
     else if (state == UNMUTE)
         GPIO_setOutputLowOnPin(TR_MUTE); // set low for unmute pin
+    updateDisplay();
 }
 
 // routine to select desired menu functions
@@ -320,9 +327,6 @@ void selectMenuFunction(void)
         break;
     case MENU_FUNCTION_CWSPEED :
         initADC(CWSPEED_MEASUREMENT);
-        break;
-    case MENU_FUNCTION_MUTE :
-        selectAudioState(MUTE);
         break;
     default :
         break;

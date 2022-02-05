@@ -120,7 +120,7 @@ void initGPIO(void)
        GPIO_PIN7
        );
 
-   // Band select, RIT, filter select, tune buttons
+   // Band select, Mute, filter select, tune buttons
    GPIO_setAsInputPin(
        GPIO_PORT_P3,
        GPIO_PIN1 + GPIO_PIN3 + GPIO_PIN4 + GPIO_PIN7
@@ -139,12 +139,12 @@ void initGPIO(void)
    GPIO_selectInterruptEdge(GPIO_PORT_P2, GPIO_PIN3 + GPIO_PIN4 + GPIO_PIN7, GPIO_HIGH_TO_LOW_TRANSITION);
 
 
-   // configure transceiver outputs - default all to low output
+   // configure transceiver outputs - default all to low output except for mute
    GPIO_setAsOutputPin(TR_SWITCH);
    GPIO_setAsOutputPin(TR_MUTE);
    GPIO_setAsOutputPin(CW_OUT);
    GPIO_setOutputLowOnPin(TR_SWITCH);
-   GPIO_setOutputLowOnPin(TR_MUTE);
+   GPIO_setOutputHighOnPin(TR_MUTE);
    GPIO_setOutputLowOnPin(CW_OUT);
 
    // configure band selection and default to 40M
@@ -165,7 +165,7 @@ void initGPIO(void)
 
    // enable and clear interrupts
    GPIO_enableInterrupt(BTN_CWSPEED);
-   GPIO_enableInterrupt(BTN_RIT);
+   GPIO_enableInterrupt(BTN_MUTE);
    GPIO_enableInterrupt(BTN_DIGIT_SELECT);
    GPIO_enableInterrupt(BTN_FILTER_SELECT);
    GPIO_enableInterrupt(BTN_BAND_SELECT);
@@ -175,7 +175,7 @@ void initGPIO(void)
    GPIO_enableInterrupt(STRAIGHT_KEY);
 
    GPIO_clearInterrupt(BTN_CWSPEED);
-   GPIO_clearInterrupt(BTN_RIT);
+   GPIO_clearInterrupt(BTN_MUTE);
    GPIO_clearInterrupt(BTN_DIGIT_SELECT);
    GPIO_clearInterrupt(BTN_FILTER_SELECT);
    GPIO_clearInterrupt(BTN_BAND_SELECT);

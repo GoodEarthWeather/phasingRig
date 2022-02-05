@@ -88,9 +88,9 @@ __interrupt void Port_3(void)
           break;                         // Vector  4:  Port 3 Bit 1
       case  6: break;                         // Vector  6:  Port 3 Bit 2
       case  8:
-          // P3.3 = RIT button
-          buttonPressed = BTN_PRESSED_RIT;
-          GPIO_clearInterrupt(BTN_RIT);
+          // P3.3 = MUTE button
+          buttonPressed = BTN_PRESSED_MUTE;
+          GPIO_clearInterrupt(BTN_MUTE);
           break;                         // Vector  8:  Port 3 Bit 3
       case  10:
           // P3.4 = Filter Select button

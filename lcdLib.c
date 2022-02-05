@@ -167,6 +167,7 @@ void updateDisplay(void)
     extern uint8_t selectedMenuFunction;
     extern int16_t ritOffset;
     extern uint8_t ritState;
+    extern uint8_t audioState;
     uint8_t i;
 
     lcdClear();
@@ -235,6 +236,10 @@ void updateDisplay(void)
         ritStateBuffer[i] = '\0';
         lcdSetText(ritStateBuffer,5,1);
     }
+    else if (audioState == MUTE)
+    {
+        lcdSetText("MUTE",0,1);
+    }
     else
     {
         switch (selectedMenuFunction)
@@ -252,9 +257,6 @@ void updateDisplay(void)
         case MENU_FUNCTION_CWSPEED :
             getCWSpeed();
             setCWSpeedText();
-            break;
-        case MENU_FUNCTION_MUTE :
-            lcdSetText("MUTE",0,1);
             break;
         default :
             break;
