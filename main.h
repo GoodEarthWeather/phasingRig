@@ -17,12 +17,12 @@
 void initClocks(void);
 void initGPIO(void);
 void moveFreqCursor(void);
-void updateDisplay(void);
+void updateDisplay(uint8_t);
 void selectBand(void);
 void selectFilter(void);
 void selectSideband(void);
 void selectAudioState(uint8_t);
-void setBatVoltText(void);
+void setBatVoltText(uint32_t);
 void getBatteryVoltage(void);
 void initADC(uint8_t);
 void selectMenuFunction(void);
@@ -148,5 +148,10 @@ void initsi5351(void);
 
 #define BATTERY_MEASUREMENT 0x0
 #define CWSPEED_MEASUREMENT 0x1
+
+#define FREQ_DISPLAY 0x1
+#define BAND_DISPLAY 0x2
+#define MENU_DISPLAY 0x3
+#define FILTER_DISPLAY 0x4
 
 #endif /* MYINCLUDE_MAIN_H_ */

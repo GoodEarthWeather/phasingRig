@@ -48,7 +48,7 @@ int main(void) {
 
     // set defaults
 
-    freqMultiplier = 10;
+    freqMultiplier = 1000;
     selectedBand = BAND_40M;
     selectedFilter = SSB_FILTER;
     selectedSideband = LOWER_SIDEBAND;
@@ -92,7 +92,7 @@ int main(void) {
                     (ritState == ENABLED) ? (ritOffset += deltaFreq*freqMultiplier) : (si5351FreqOut += deltaFreq*freqMultiplier);
                     si5351_set_RX_freq((si5351FreqOut+ritOffset)<<2);
                     si5351_set_TX_freq(si5351FreqOut);
-                    updateDisplay();
+                    updateDisplay(FREQ_DISPLAY);
                 }
             }
             else if ( encoderCWCount < encoderCCWCount )  // frequency decrease
@@ -103,7 +103,7 @@ int main(void) {
                     (ritState == ENABLED) ? (ritOffset -= deltaFreq*freqMultiplier) : (si5351FreqOut -= deltaFreq*freqMultiplier);
                     si5351_set_RX_freq((si5351FreqOut+ritOffset)<<2);
                     si5351_set_TX_freq(si5351FreqOut);
-                    updateDisplay();
+                    updateDisplay(FREQ_DISPLAY);
                 }
             }
         encoderCWCount = encoderCCWCount = 0;
@@ -135,6 +135,7 @@ int main(void) {
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_BAND_SELECT :
+            selectAudioState(MUTE);
             if (selectedBand == BAND_10M)
             {
                 si5351_start(); // going from 10M to 40M band, so need to reset pllB to a fixed value
@@ -145,6 +146,8 @@ int main(void) {
                 selectedBand++;
             }
             selectBand();
+            if (audioState != MUTE)
+                selectAudioState(UNMUTE);
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_SPOT :
@@ -175,7 +178,7 @@ int main(void) {
             ritOffset = 0;
             si5351_set_RX_freq(si5351FreqOut<<2);  //put RX frequency back to same as TX freq.
             freqMultiplier = 100;
-            updateDisplay();
+            updateDisplay(MENU_DISPLAY);
             buttonPressed = BTN_PRESSED_NONE;
             break;
         default :
@@ -188,7 +191,7 @@ int main(void) {
             getCWSpeed();
             if ( wpm != temp)  // if not equal, CW speed pot must have changed, so update display
             {
-                updateDisplay();
+                updateDisplay(MENU_DISPLAY);
             }
         }
     }
@@ -197,7 +200,6 @@ int main(void) {
 // routine to select band
 void selectBand(void)
 {
-    selectAudioState(MUTE);
     switch (selectedBand)
     {
     case BAND_40M :
@@ -276,9 +278,11 @@ void selectBand(void)
     // reset menu function
     ritState = DISABLED;
     ritOffset = 0;
+    initADC(BATTERY_MEASUREMENT);
     selectedMenuFunction = MENU_FUNCTION_BATVOLTAGE;
-    selectAudioState(UNMUTE);
-    updateDisplay();
+    updateDisplay(BAND_DISPLAY);
+    updateDisplay(MENU_DISPLAY);
+    updateDisplay(FREQ_DISPLAY);
 }
 
 // routine to select filter
@@ -289,7 +293,7 @@ void selectFilter(void)
         GPIO_setOutputLowOnPin(FILTER_SELECT);  // set low for CW filter
     else
         GPIO_setOutputHighOnPin(FILTER_SELECT); // set high for SSB filter
-    updateDisplay();
+    updateDisplay(FILTER_DISPLAY);
     selectAudioState(UNMUTE);
 }
 
@@ -300,7 +304,7 @@ void selectSideband(void)
         GPIO_setOutputHighOnPin(SIDEBAND_SELECT);  // need to check
     else
         GPIO_setOutputLowOnPin(SIDEBAND_SELECT); // need to check
-    updateDisplay();
+    updateDisplay(BAND_DISPLAY);
 }
 
 // routine to set audio state - mute or unmute
@@ -310,7 +314,7 @@ void selectAudioState(uint8_t state)
         GPIO_setOutputHighOnPin(TR_MUTE); // set high for mute pin
     else if (state == UNMUTE)
         GPIO_setOutputLowOnPin(TR_MUTE); // set low for unmute pin
-    updateDisplay();
+    updateDisplay(MENU_DISPLAY);
 }
 
 // routine to select desired menu functions
@@ -331,7 +335,7 @@ void selectMenuFunction(void)
     default :
         break;
     }
-    updateDisplay();
+    updateDisplay(MENU_DISPLAY);
 }
 
 // routine to measure battery voltage

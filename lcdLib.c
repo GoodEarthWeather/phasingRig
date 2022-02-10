@@ -14,7 +14,7 @@ static char cwSpeedBuffer[8]; /* for holding cw speed text */
 static char ritStateBuffer[16];
 
 void setCWSpeedText(void);
-void setBatVoltText(void);
+void setBatVoltText(uint32_t);
 
 
 void lcdInit() {
@@ -156,7 +156,7 @@ void moveFreqCursor(void)
 }
 
 // routine to display frequency
-void updateDisplay(void)
+void updateDisplay(uint8_t display)
 {
     char *result;
     extern uint8_t selectedBand;
@@ -169,124 +169,136 @@ void updateDisplay(void)
     extern uint8_t ritState;
     extern uint8_t audioState;
     uint8_t i;
+    float z;
+    uint32_t batV;
 
-    lcdClear();
+
+    //lcdClear();
 
     // display frequency
     //lcdSetInt(si5351FreqOut, 0, 0);
-    result = number_to_string(si5351FreqOut);
-    if (selectedBand == BAND_40M)
+    if ( display == FREQ_DISPLAY)  // update frequency field
     {
-        freqBuffer[0] = *result++;
-        freqBuffer[1] = '.';
-        freqBuffer[2] = *result++;
-        freqBuffer[3] = *result++;
-        freqBuffer[4] = *result++;
-        freqBuffer[5] = '.';
-        freqBuffer[6] = *result++;
-        freqBuffer[7] = *result++;
-        freqBuffer[8] = *result++;
-        freqBuffer[9] = '\0';
-    } else {
-        freqBuffer[0] = *result++;
-        freqBuffer[1] = *result++;
-        freqBuffer[2] = '.';
-        freqBuffer[3] = *result++;
-        freqBuffer[4] = *result++;
-        freqBuffer[5] = *result++;
-        freqBuffer[6] = '.';
-        freqBuffer[7] = *result++;
-        freqBuffer[8] = *result++;
-        freqBuffer[9] = *result++;
-        freqBuffer[10] = '\0';
-    }
-    lcdSetText(freqBuffer,0,0);
-
-    // display band
-    switch (selectedBand)
-    {
-    case  BAND_40M :
-        lcdSetText("40M",0xD,0);  // put band info at position 13 (0xD) on first row
-        break;
-    case  BAND_30M :
-        lcdSetText("30M",0xD,0);  // put band info at position 13 (0xD) on first row
-        break;
-    case  BAND_20M :
-        lcdSetText("20M",0xD,0);  // put band info at position 13 (0xD) on first row
-        break;
-    case  BAND_17M :
-        lcdSetText("17M",0xD,0);  // put band info at position 13 (0xD) on first row
-        break;
-    case  BAND_10M :
-        lcdSetText("10M",0xD,0);  // put band info at position 13 (0xD) on first row
-        break;
-    default :
-        break;
-    }
-
-    // display menu function if RIT is not enabled
-    if (ritState == ENABLED)
-    {
-        lcdSetText("RIT: ",0,1);
-        result = number_to_string((uint32_t)(abs(ritOffset)));
-        (ritOffset < 0) ? (ritStateBuffer[0] = '-') : (ritStateBuffer[0] = '+');
-        i = 1;
-        while (*result != '\0')
-            ritStateBuffer[i++] = *result++;
-        ritStateBuffer[i] = '\0';
-        lcdSetText(ritStateBuffer,5,1);
-    }
-    else if (audioState == MUTE)
-    {
-        lcdSetText("MUTE",0,1);
-    }
-    else
-    {
-        switch (selectedMenuFunction)
+        result = number_to_string(si5351FreqOut);
+        if (selectedBand == BAND_40M)
         {
-        case MENU_FUNCTION_SIDEBAND :
-            if (selectedSideband == UPPER_SIDEBAND)
-                lcdSetText("USB",0,1);
-            else
-                lcdSetText("LSB",0,1);
+            freqBuffer[0] = *result++;
+            freqBuffer[1] = '.';
+            freqBuffer[2] = *result++;
+            freqBuffer[3] = *result++;
+            freqBuffer[4] = *result++;
+            freqBuffer[5] = '.';
+            freqBuffer[6] = *result++;
+            freqBuffer[7] = *result++;
+            freqBuffer[8] = *result++;
+            freqBuffer[9] = '\0';
+        } else {
+            freqBuffer[0] = *result++;
+            freqBuffer[1] = *result++;
+            freqBuffer[2] = '.';
+            freqBuffer[3] = *result++;
+            freqBuffer[4] = *result++;
+            freqBuffer[5] = *result++;
+            freqBuffer[6] = '.';
+            freqBuffer[7] = *result++;
+            freqBuffer[8] = *result++;
+            freqBuffer[9] = *result++;
+            freqBuffer[10] = '\0';
+        }
+        lcdSetText("          ",0,0);  // clear field
+        lcdSetText(freqBuffer,0,0);
+    }
+
+    else if (display == BAND_DISPLAY) // update band field
+    {
+        // display band
+        lcdSetText("   ",0xD,0); // clear field
+        switch (selectedBand)
+        {
+        case  BAND_40M :
+            lcdSetText("40M",0xD,0);  // put band info at position 13 (0xD) on first row
             break;
-        case MENU_FUNCTION_BATVOLTAGE :
-            getBatteryVoltage();
-            setBatVoltText();
+        case  BAND_30M :
+            lcdSetText("30M",0xD,0);  // put band info at position 13 (0xD) on first row
             break;
-        case MENU_FUNCTION_CWSPEED :
-            getCWSpeed();
-            setCWSpeedText();
+        case  BAND_20M :
+            lcdSetText("20M",0xD,0);  // put band info at position 13 (0xD) on first row
+            break;
+        case  BAND_17M :
+            lcdSetText("17M",0xD,0);  // put band info at position 13 (0xD) on first row
+            break;
+        case  BAND_10M :
+            lcdSetText("10M",0xD,0);  // put band info at position 13 (0xD) on first row
             break;
         default :
             break;
         }
     }
 
-    // display filter selection
-    if (selectedFilter == SSB_FILTER)
-        lcdSetText("SSB",0xD,1);
-    else
-        lcdSetText("CW",0xE,1);
+    else if (display == MENU_DISPLAY)
+    {
+        lcdSetText("            ",0,1);
+        // display menu function if RIT is not enabled
+        if (ritState == ENABLED)
+        {
+            lcdSetText("RIT: ",0,1);
+            result = number_to_string((uint32_t)(abs(ritOffset)));
+            (ritOffset < 0) ? (ritStateBuffer[0] = '-') : (ritStateBuffer[0] = '+');
+            i = 1;
+            while (*result != '\0')
+                ritStateBuffer[i++] = *result++;
+            ritStateBuffer[i] = '\0';
+            lcdSetText(ritStateBuffer,5,1);
+        }
+        else if (audioState == MUTE)
+        {
+            lcdSetText("MUTE",0,1);
+        }
+        else
+        {
+            switch (selectedMenuFunction)
+            {
+            case MENU_FUNCTION_SIDEBAND :
+                if (selectedSideband == UPPER_SIDEBAND)
+                    lcdSetText("USB",0,1);
+                else
+                    lcdSetText("LSB",0,1);
+                break;
+            case MENU_FUNCTION_BATVOLTAGE :
+                getBatteryVoltage();
+                // assume external resistor divider is 0.1 and full scale is 1.5V
+                // ((batteryVoltage * 1.5/0.1) * 65536)/4096 = batteryVoltage * 240
+                // Actual resistor divider is about 0.098, not 0.1, so 245 is used instead of 240
+                z = ((float)batteryVoltage/4096.0)*1.5/0.098;
+                batV = (uint32_t)(round(z*10.0));
+                setBatVoltText(batV);
+                break;
+            case MENU_FUNCTION_CWSPEED :
+                getCWSpeed();
+                setCWSpeedText();
+                break;
+            default :
+                break;
+            }
+        }
+    }
+    else if (display == FILTER_DISPLAY)
+    {
+        lcdSetText("   ",0xD,1);
+        // display filter selection
+        if (selectedFilter == SSB_FILTER)
+            lcdSetText("SSB",0xD,1);
+        else
+            lcdSetText(" CW",0xD,1);
+    }
     moveFreqCursor();
 }
 
 /* This routine will take the battery voltage and convert it to text for the LCD */
-void setBatVoltText(void)
+void setBatVoltText(uint32_t result)
 {
-    //uint32_t x;
-    //uint32_t upper, lower; /* upper=integer part, lower=fractional part */
-    uint32_t result;
-    extern uint16_t batteryVoltage;
-    char *txt;
-    float z;
+   char *txt;
 
-    // assume external resistor divider is 0.1 and full scale is 1.5V
-    // ((batteryVoltage * 1.5/0.1) * 65536)/4096 = batteryVoltage * 240
-    // Actual resistor divider is about 0.098, not 0.1, so 245 is used instead of 240
-
-    z = ((float)batteryVoltage/4096.0)*1.5/0.098;
-    result = (uint32_t)(round(z*10.0));
     /* now convert to string */
     txt = number_to_string(result);
 
