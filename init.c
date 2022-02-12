@@ -152,12 +152,12 @@ void initGPIO(void)
    GPIO_setAsOutputPin(BAND_30M_SELECT);
    GPIO_setAsOutputPin(BAND_20M_SELECT);
    GPIO_setAsOutputPin(BAND_17M_SELECT);
-   GPIO_setAsOutputPin(BAND_10M_SELECT);
+   GPIO_setAsOutputPin(BAND_15M_SELECT);
    GPIO_setOutputHighOnPin(BAND_40M_SELECT);  // default to 40M
    GPIO_setOutputLowOnPin(BAND_30M_SELECT);
    GPIO_setOutputLowOnPin(BAND_20M_SELECT);
    GPIO_setOutputLowOnPin(BAND_17M_SELECT);
-   GPIO_setOutputLowOnPin(BAND_10M_SELECT);
+   GPIO_setOutputLowOnPin(BAND_15M_SELECT);
 
    GPIO_setAsOutputPin(FILTER_SELECT);
    GPIO_setAsOutputPin(SIDEBAND_SELECT);

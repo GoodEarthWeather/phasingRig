@@ -156,7 +156,7 @@ void moveFreqCursor(void)
 }
 
 // routine to display frequency
-void updateDisplay(uint8_t display)
+void updateDisplay(uint8_t field)
 {
     char *result;
     extern uint8_t selectedBand;
@@ -177,7 +177,7 @@ void updateDisplay(uint8_t display)
 
     // display frequency
     //lcdSetInt(si5351FreqOut, 0, 0);
-    if ( display == FREQ_DISPLAY)  // update frequency field
+    if ( field == FREQ_DISPLAY)  // update frequency field
     {
         result = number_to_string(si5351FreqOut);
         if (selectedBand == BAND_40M)
@@ -209,7 +209,7 @@ void updateDisplay(uint8_t display)
         lcdSetText(freqBuffer,0,0);
     }
 
-    else if (display == BAND_DISPLAY) // update band field
+    else if (field == BAND_DISPLAY) // update band field
     {
         // display band
         lcdSetText("   ",0xD,0); // clear field
@@ -227,15 +227,15 @@ void updateDisplay(uint8_t display)
         case  BAND_17M :
             lcdSetText("17M",0xD,0);  // put band info at position 13 (0xD) on first row
             break;
-        case  BAND_10M :
-            lcdSetText("10M",0xD,0);  // put band info at position 13 (0xD) on first row
+        case  BAND_15M :
+            lcdSetText("15M",0xD,0);  // put band info at position 13 (0xD) on first row
             break;
         default :
             break;
         }
     }
 
-    else if (display == MENU_DISPLAY)
+    else if (field == MENU_DISPLAY)
     {
         lcdSetText("            ",0,1);
         // display menu function if RIT is not enabled
@@ -282,7 +282,7 @@ void updateDisplay(uint8_t display)
             }
         }
     }
-    else if (display == FILTER_DISPLAY)
+    else if (field == FILTER_DISPLAY)
     {
         lcdSetText("   ",0xD,1);
         // display filter selection

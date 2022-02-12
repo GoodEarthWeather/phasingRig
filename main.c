@@ -65,6 +65,7 @@ int main(void) {
 
     // now unmute audio
     audioState = UNMUTE;
+    selectAudioState(UNMUTE);
 
     // setup encoder variables
     encoderCWCount = 0;
@@ -93,6 +94,8 @@ int main(void) {
                     si5351_set_RX_freq((si5351FreqOut+ritOffset)<<2);
                     si5351_set_TX_freq(si5351FreqOut);
                     updateDisplay(FREQ_DISPLAY);
+                    if (ritState == ENABLED)
+                        updateDisplay(MENU_DISPLAY);
                 }
             }
             else if ( encoderCWCount < encoderCCWCount )  // frequency decrease
@@ -104,6 +107,8 @@ int main(void) {
                     si5351_set_RX_freq((si5351FreqOut+ritOffset)<<2);
                     si5351_set_TX_freq(si5351FreqOut);
                     updateDisplay(FREQ_DISPLAY);
+                    if (ritState == ENABLED)
+                        updateDisplay(MENU_DISPLAY);
                 }
             }
         encoderCWCount = encoderCCWCount = 0;
@@ -136,9 +141,9 @@ int main(void) {
             break;
         case BTN_PRESSED_BAND_SELECT :
             selectAudioState(MUTE);
-            if (selectedBand == BAND_10M)
+            if (selectedBand == BAND_15M)
             {
-                si5351_start(); // going from 10M to 40M band, so need to reset pllB to a fixed value
+                si5351_start(); // going from 15M to 40M band, so need to reset pllB to a fixed value
                 selectedBand = BAND_40M;
             }
             else
@@ -207,7 +212,7 @@ void selectBand(void)
         GPIO_setOutputLowOnPin(BAND_30M_SELECT);
         GPIO_setOutputLowOnPin(BAND_20M_SELECT);
         GPIO_setOutputLowOnPin(BAND_17M_SELECT);
-        GPIO_setOutputLowOnPin(BAND_10M_SELECT);
+        GPIO_setOutputLowOnPin(BAND_15M_SELECT);
         si5351FreqOut = BAND_40M_LOWER;
         si5351_set_RX_freq(si5351FreqOut<<2);
         si5351_set_TX_freq(si5351FreqOut);
@@ -221,7 +226,7 @@ void selectBand(void)
         GPIO_setOutputHighOnPin(BAND_30M_SELECT);
         GPIO_setOutputLowOnPin(BAND_20M_SELECT);
         GPIO_setOutputLowOnPin(BAND_17M_SELECT);
-        GPIO_setOutputLowOnPin(BAND_10M_SELECT);
+        GPIO_setOutputLowOnPin(BAND_15M_SELECT);
         si5351FreqOut = BAND_30M_LOWER;
         si5351_set_RX_freq(si5351FreqOut<<2);
         si5351_set_TX_freq(si5351FreqOut);
@@ -235,7 +240,7 @@ void selectBand(void)
         GPIO_setOutputLowOnPin(BAND_30M_SELECT);
         GPIO_setOutputHighOnPin(BAND_20M_SELECT);
         GPIO_setOutputLowOnPin(BAND_17M_SELECT);
-        GPIO_setOutputLowOnPin(BAND_10M_SELECT);
+        GPIO_setOutputLowOnPin(BAND_15M_SELECT);
         si5351FreqOut = BAND_20M_LOWER;
         si5351_set_RX_freq(si5351FreqOut<<2);
         si5351_set_TX_freq(si5351FreqOut);
@@ -249,7 +254,7 @@ void selectBand(void)
         GPIO_setOutputLowOnPin(BAND_30M_SELECT);
         GPIO_setOutputLowOnPin(BAND_20M_SELECT);
         GPIO_setOutputHighOnPin(BAND_17M_SELECT);
-        GPIO_setOutputLowOnPin(BAND_10M_SELECT);
+        GPIO_setOutputLowOnPin(BAND_15M_SELECT);
         si5351FreqOut = BAND_17M_LOWER;
         si5351_set_RX_freq(si5351FreqOut<<2);
         si5351_set_TX_freq(si5351FreqOut);
@@ -258,19 +263,19 @@ void selectBand(void)
         maxBandFreq = BAND_17M_UPPER;
         minBandFreq = BAND_17M_LOWER;
         break;
-    case BAND_10M :
+    case BAND_15M :
         GPIO_setOutputLowOnPin(BAND_40M_SELECT);
         GPIO_setOutputLowOnPin(BAND_30M_SELECT);
         GPIO_setOutputLowOnPin(BAND_20M_SELECT);
         GPIO_setOutputLowOnPin(BAND_17M_SELECT);
-        GPIO_setOutputHighOnPin(BAND_10M_SELECT);
-        si5351FreqOut = BAND_10M_LOWER;
+        GPIO_setOutputHighOnPin(BAND_15M_SELECT);
+        si5351FreqOut = BAND_15M_LOWER;
         si5351_set_RX_freq(si5351FreqOut<<2);
         si5351_set_TX_freq(si5351FreqOut);
         selectedSideband = UPPER_SIDEBAND;
         selectSideband();
-        maxBandFreq = BAND_10M_UPPER;
-        minBandFreq = BAND_10M_LOWER;
+        maxBandFreq = BAND_15M_UPPER;
+        minBandFreq = BAND_15M_LOWER;
         break;
     default :
         break;
@@ -288,13 +293,11 @@ void selectBand(void)
 // routine to select filter
 void selectFilter(void)
 {
-    selectAudioState(MUTE);
     if (selectedFilter == CW_FILTER)
         GPIO_setOutputLowOnPin(FILTER_SELECT);  // set low for CW filter
     else
         GPIO_setOutputHighOnPin(FILTER_SELECT); // set high for SSB filter
     updateDisplay(FILTER_DISPLAY);
-    selectAudioState(UNMUTE);
 }
 
 // routine to select filter

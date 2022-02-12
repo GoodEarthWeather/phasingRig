@@ -104,66 +104,27 @@ void si5351_set_RX_freq(unsigned long freq)
   unsigned long p1, p2, p3;
   extern uint8_t selectedSideband;
 
-  if ( selectedSideband != BAND_10M )
-  {
-      // set frequency for SYNTH_MS_0 - CLK0 for QSD input
-      a = b = c = 1048575;
-      fdiv = (double) (f_xtal * 33) / freq;
-      a = (unsigned long) fdiv;
-      rm = fdiv - a;  //(equiv. b/c)
-      b = rm * c;
-      p1  = 128 * a + (unsigned long) (128 * b / c) - 512;
-      p2 = 128 * b - c * (unsigned long) (128 * b / c);
-      p3 = c;
 
-      //Write data to multisynth registers of synth n
-      i2cSendRegister(SYNTH_MS_0, (p3 & 0xFF00) >> 8);      //1048757 MSB
-      i2cSendRegister(SYNTH_MS_0 + 1, (p3 & 0xFF));  //1048757 LSB
-      i2cSendRegister(SYNTH_MS_0 + 2, (p1 & 0x00030000) >> 16);
-      i2cSendRegister(SYNTH_MS_0 + 3, (p1 & 0x0000FF00) >> 8);
-      i2cSendRegister(SYNTH_MS_0 + 4, (p1 & 0x000000FF));
-      i2cSendRegister(SYNTH_MS_0 + 5, 0xF0 | ((p2 & 0x000F0000) >> 16));
-      i2cSendRegister(SYNTH_MS_0 + 6, (p2 & 0x0000FF00) >> 8);
-      i2cSendRegister(SYNTH_MS_0 + 7, (p2 & 0x000000FF));
-  }
-  else
-  {
-      // 10M band selected; set PLLB based on freq; set output multisynth to divide by 4
-      a = b = c = 1048575;
-      fdiv = (double) (freq * 4)/f_xtal;
-      a = (unsigned long) fdiv;
-      rm = fdiv - a;  //(equiv. b/c)
-      b = rm * c;
-      p1  = 128 * a + (unsigned long) (128 * b / c) - 512;
-      p2 = 128 * b - c * (unsigned long) (128 * b / c);
-      p3 = c;
+  // set frequency for SYNTH_MS_0 - CLK0 for QSD input
+  a = b = c = 1048575;
+  fdiv = (double) (f_xtal * 33) / freq;
+  a = (unsigned long) fdiv;
+  rm = fdiv - a;  //(equiv. b/c)
+  b = rm * c;
+  p1  = 128 * a + (unsigned long) (128 * b / c) - 512;
+  p2 = 128 * b - c * (unsigned long) (128 * b / c);
+  p3 = c;
 
-      //Write data to registers PLLB so that both VCOs are set to 891MHz intermal freq
-      i2cSendRegister(SYNTH_PLL_B, (p3 & 0xFF00) >> 8);
-      i2cSendRegister(SYNTH_PLL_B + 1, (p3 & 0xFF));
-      i2cSendRegister(SYNTH_PLL_B + 2, (p1 & 0x00030000) >> 16);
-      i2cSendRegister(SYNTH_PLL_B + 3, (p1 & 0x0000FF00) >> 8);
-      i2cSendRegister(SYNTH_PLL_B + 4, (p1 & 0x000000FF));
-      i2cSendRegister(SYNTH_PLL_B + 5, 0xF0 | ((p2 & 0x000F0000) >> 16));
-      i2cSendRegister(SYNTH_PLL_B + 6, (p2 & 0x0000FF00) >> 8);
-      i2cSendRegister(SYNTH_PLL_B + 7, (p2 & 0x000000FF));
+  //Write data to multisynth registers of synth n
+  i2cSendRegister(SYNTH_MS_0, (p3 & 0xFF00) >> 8);      //1048757 MSB
+  i2cSendRegister(SYNTH_MS_0 + 1, (p3 & 0xFF));  //1048757 LSB
+  i2cSendRegister(SYNTH_MS_0 + 2, (p1 & 0x00030000) >> 16);
+  i2cSendRegister(SYNTH_MS_0 + 3, (p1 & 0x0000FF00) >> 8);
+  i2cSendRegister(SYNTH_MS_0 + 4, (p1 & 0x000000FF));
+  i2cSendRegister(SYNTH_MS_0 + 5, 0xF0 | ((p2 & 0x000F0000) >> 16));
+  i2cSendRegister(SYNTH_MS_0 + 6, (p2 & 0x0000FF00) >> 8);
+  i2cSendRegister(SYNTH_MS_0 + 7, (p2 & 0x000000FF));
 
-      // set frequency for SYNTH_MS_0 - CLK0 for QSD input
-      p1 = 0;
-      p2 = 0;
-      p3 = 1;
-
-      //Write data to multisynth registers of synth n
-      i2cSendRegister(SYNTH_MS_0, (p3 & 0xFF00) >> 8);      //1048757 MSB
-      i2cSendRegister(SYNTH_MS_0 + 1, (p3 & 0xFF));  //1048757 LSB
-      i2cSendRegister(SYNTH_MS_0 + 2, ((p1 & 0x00030000) >> 16) | 0b00100000);  // set rdiv to 4
-      i2cSendRegister(SYNTH_MS_0 + 3, (p1 & 0x0000FF00) >> 8);
-      i2cSendRegister(SYNTH_MS_0 + 4, (p1 & 0x000000FF));
-      i2cSendRegister(SYNTH_MS_0 + 5, 0xF0 | ((p2 & 0x000F0000) >> 16));
-      i2cSendRegister(SYNTH_MS_0 + 6, (p2 & 0x0000FF00) >> 8);
-      i2cSendRegister(SYNTH_MS_0 + 7, (p2 & 0x000000FF));
-
-  }
 }
 
 void si5351_set_TX_freq(unsigned long freq)
