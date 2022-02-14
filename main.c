@@ -13,18 +13,20 @@ uint16_t batteryVoltage;
 uint32_t maxBandFreq;
 uint32_t minBandFreq;
 uint8_t selectedMenuFunction;
-uint8_t txKeyState;
-uint8_t keyStateChanged;
-uint8_t ritState;
+uint8_t txKeyState;  // indicates whether key is down or up (pressed or released)
+uint8_t keyStateChanged;  // indicates that the key was either pressed or released
+uint8_t ritState; // indicates whether receiver is in RIT mode
 int16_t ritOffset;
 uint8_t wpm;
-uint8_t audioState;
-uint8_t spotMode;
+uint8_t audioState; // indicates whether receiver is muted or not
+uint8_t spotMode;  // enables sidetone for setting zero beat with incoming signal
+uint8_t txMode;  // enable or disable transmitter
+uint8_t receiveMode;  // indicates whether receiver is set for receiving CW (rxoffset added) or SSB (no offset)
 
 
 int main(void) {
 
-    uint32_t deltaFreq;
+
     extern uint8_t volatile buttonPressed;
     uint8_t temp;
 
@@ -47,9 +49,11 @@ int main(void) {
     txKeyState = TX_KEY_UP; // means not transmitting
     ritState = DISABLED;
     ritOffset = 0;
+    txMode = DISABLED;
 
     // set defaults
 
+    receiveMode = RXMODE_CW;
     spotMode = DISABLED;
     freqMultiplier = 1000;
     selectedBand = BAND_40M;
@@ -63,7 +67,7 @@ int main(void) {
 
     // set initial si5351 clock to 7MHz
     si5351FreqOut = BAND_40M_LOWER;
-    si5351_set_RX_freq(si5351FreqOut<<2);
+    si5351_set_RX_freq(si5351FreqOut);
     si5351_set_TX_freq(si5351FreqOut);
 
     // now unmute audio
@@ -82,39 +86,27 @@ int main(void) {
         if (keyStateChanged == 1)
         {
             keyStateChanged = 0;
-            si5351_RXTX_enable();
+            // sidetone
+            (txKeyState == TX_KEY_DOWN) ?(Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE)) : (Timer_A_stop(TIMER_A0_BASE));
+            if (txMode == ENABLED)  // transmitter is enabled
+            {
+                si5351_RXTX_enable();
+                (txKeyState == TX_KEY_DOWN) ? (GPIO_setOutputHighOnPin(CW_OUT)) : (GPIO_setOutputLowOnPin(CW_OUT));
+            }
         }
 
         // check encoder
         if ((encoderCWCount != 0) || (encoderCCWCount != 0))  // if true, the encoder knob was turned
         {
-            if ( encoderCWCount > encoderCCWCount ) // net count indicates frequency increase
+            if (selectedMenuFunction == MENU_FUNCTION_RXMODE)
             {
-                deltaFreq = encoderCWCount - encoderCCWCount;
-                if ( (si5351FreqOut + deltaFreq*freqMultiplier) <= maxBandFreq )
-                {
-                    (ritState == ENABLED) ? (ritOffset += deltaFreq*freqMultiplier) : (si5351FreqOut += deltaFreq*freqMultiplier);
-                    si5351_set_RX_freq((si5351FreqOut+ritOffset)<<2);
-                    si5351_set_TX_freq(si5351FreqOut);
-                    updateDisplay(FREQ_DISPLAY);
-                    if (ritState == ENABLED)
-                        updateDisplay(MENU_DISPLAY);
-                }
+                (receiveMode == RXMODE_CW) ? (receiveMode = RXMODE_SSB) : (receiveMode = RXMODE_CW);
+                updateDisplay(MENU_DISPLAY);
+                encoderCWCount = encoderCCWCount = 0;
+                si5351_set_RX_freq(si5351FreqOut);
             }
-            else if ( encoderCWCount < encoderCCWCount )  // frequency decrease
-            {
-                deltaFreq = encoderCCWCount - encoderCWCount;
-                if ( (si5351FreqOut - deltaFreq*freqMultiplier) >= minBandFreq )
-                {
-                    (ritState == ENABLED) ? (ritOffset -= deltaFreq*freqMultiplier) : (si5351FreqOut -= deltaFreq*freqMultiplier);
-                    si5351_set_RX_freq((si5351FreqOut+ritOffset)<<2);
-                    si5351_set_TX_freq(si5351FreqOut);
-                    updateDisplay(FREQ_DISPLAY);
-                    if (ritState == ENABLED)
-                        updateDisplay(MENU_DISPLAY);
-                }
-            }
-        encoderCWCount = encoderCCWCount = 0;
+            else
+                updateFrequency();
         }
 
         // check buttons
@@ -122,7 +114,17 @@ int main(void) {
         {
         case BTN_PRESSED_NONE :
             break;
-        case BTN_PRESSED_CWSPEED :
+        case BTN_PRESSED_TXMODE :
+            if (txMode == DISABLED)
+            {
+                txMode = ENABLED;
+                GPIO_setOutputHighOnPin(TXMODE_LED); // turn on LED to indicate transmit mode enabled
+            }
+            else
+            {
+                txMode = DISABLED;
+                GPIO_setOutputLowOnPin(TXMODE_LED); // turn off LED to indicate transmit mode disabled
+            }
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_MUTE :
@@ -175,7 +177,7 @@ int main(void) {
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_MENU :
-            (selectedMenuFunction == MENU_FUNCTION_CWSPEED) ? (selectedMenuFunction = MENU_FUNCTION_SIDEBAND) : selectedMenuFunction++;
+            (selectedMenuFunction == MENU_FUNCTION_RXMODE) ? (selectedMenuFunction = MENU_FUNCTION_SIDEBAND) : selectedMenuFunction++;
             selectMenuFunction();
             buttonPressed = BTN_PRESSED_NONE;
             break;
@@ -194,7 +196,7 @@ int main(void) {
         case BTN_PRESSED_ENCODER :
             (ritState == DISABLED) ? (ritState = ENABLED) : (ritState = DISABLED);
             ritOffset = 0;
-            si5351_set_RX_freq(si5351FreqOut<<2);  //put RX frequency back to same as TX freq.
+            si5351_set_RX_freq(si5351FreqOut);  //put RX frequency back to same as TX freq.
             freqMultiplier = 100;
             updateDisplay(MENU_DISPLAY);
             buttonPressed = BTN_PRESSED_NONE;
@@ -227,7 +229,7 @@ void selectBand(void)
         GPIO_setOutputLowOnPin(BAND_17M_SELECT);
         GPIO_setOutputLowOnPin(BAND_15M_SELECT);
         si5351FreqOut = BAND_40M_LOWER;
-        si5351_set_RX_freq(si5351FreqOut<<2);
+        si5351_set_RX_freq(si5351FreqOut);
         si5351_set_TX_freq(si5351FreqOut);
         selectedSideband = LOWER_SIDEBAND;
         selectSideband();
@@ -241,7 +243,7 @@ void selectBand(void)
         GPIO_setOutputLowOnPin(BAND_17M_SELECT);
         GPIO_setOutputLowOnPin(BAND_15M_SELECT);
         si5351FreqOut = BAND_30M_LOWER;
-        si5351_set_RX_freq(si5351FreqOut<<2);
+        si5351_set_RX_freq(si5351FreqOut);
         si5351_set_TX_freq(si5351FreqOut);
         selectedSideband = UPPER_SIDEBAND;
         selectSideband();
@@ -255,7 +257,7 @@ void selectBand(void)
         GPIO_setOutputLowOnPin(BAND_17M_SELECT);
         GPIO_setOutputLowOnPin(BAND_15M_SELECT);
         si5351FreqOut = BAND_20M_LOWER;
-        si5351_set_RX_freq(si5351FreqOut<<2);
+        si5351_set_RX_freq(si5351FreqOut);
         si5351_set_TX_freq(si5351FreqOut);
         selectedSideband = UPPER_SIDEBAND;
         selectSideband();
@@ -269,7 +271,7 @@ void selectBand(void)
         GPIO_setOutputHighOnPin(BAND_17M_SELECT);
         GPIO_setOutputLowOnPin(BAND_15M_SELECT);
         si5351FreqOut = BAND_17M_LOWER;
-        si5351_set_RX_freq(si5351FreqOut<<2);
+        si5351_set_RX_freq(si5351FreqOut);
         si5351_set_TX_freq(si5351FreqOut);
         selectedSideband = UPPER_SIDEBAND;
         selectSideband();
@@ -283,7 +285,7 @@ void selectBand(void)
         GPIO_setOutputLowOnPin(BAND_17M_SELECT);
         GPIO_setOutputHighOnPin(BAND_15M_SELECT);
         si5351FreqOut = BAND_15M_LOWER;
-        si5351_set_RX_freq(si5351FreqOut<<2);
+        si5351_set_RX_freq(si5351FreqOut);
         si5351_set_TX_freq(si5351FreqOut);
         selectedSideband = UPPER_SIDEBAND;
         selectSideband();
@@ -348,6 +350,8 @@ void selectMenuFunction(void)
     case MENU_FUNCTION_CWSPEED :
         initADC(CWSPEED_MEASUREMENT);
         break;
+    case MENU_FUNCTION_RXMODE :
+        break;
     default :
         break;
     }
@@ -384,5 +388,39 @@ void getCWSpeed(void)
 
     // compute wpm
     wpm = ((25*cwSpeedVoltage)/888 + 3);
+}
+
+// This routine will update the frequency setting and display
+void updateFrequency(void)
+{
+    uint32_t deltaFreq;
+
+    if ( encoderCWCount > encoderCCWCount ) // net count indicates frequency increase
+    {
+        deltaFreq = encoderCWCount - encoderCCWCount;
+        if ( (si5351FreqOut + deltaFreq*freqMultiplier) <= maxBandFreq )
+        {
+            (ritState == ENABLED) ? (ritOffset += deltaFreq*freqMultiplier) : (si5351FreqOut += deltaFreq*freqMultiplier);
+            si5351_set_RX_freq(si5351FreqOut+ritOffset);
+            si5351_set_TX_freq(si5351FreqOut);
+            updateDisplay(FREQ_DISPLAY);
+            if (ritState == ENABLED)
+                updateDisplay(MENU_DISPLAY);
+        }
+    }
+    else if ( encoderCWCount < encoderCCWCount )  // frequency decrease
+    {
+        deltaFreq = encoderCCWCount - encoderCWCount;
+        if ( (si5351FreqOut - deltaFreq*freqMultiplier) >= minBandFreq )
+        {
+            (ritState == ENABLED) ? (ritOffset -= deltaFreq*freqMultiplier) : (si5351FreqOut -= deltaFreq*freqMultiplier);
+            si5351_set_RX_freq(si5351FreqOut+ritOffset);
+            si5351_set_TX_freq(si5351FreqOut);
+            updateDisplay(FREQ_DISPLAY);
+            if (ritState == ENABLED)
+                updateDisplay(MENU_DISPLAY);
+        }
+    }
+encoderCWCount = encoderCCWCount = 0;
 
 }

@@ -65,9 +65,9 @@ __interrupt void Port_5(void)
       case  12: break;                         // Vector  12:  Port 5 Bit 5
       case  14: break;                         // Vector  14:  Port 5 Bit 6
       case  16:
-          // P5.7 = CW Speed button
-          buttonPressed = BTN_PRESSED_CWSPEED;
-          GPIO_clearInterrupt(BTN_CWSPEED);
+          // P5.7 = TX Mode button
+          buttonPressed = BTN_PRESSED_TXMODE;
+          GPIO_clearInterrupt(BTN_TXMODE);
           break;                         // Vector  16:  Port 5 Bit 7
       default: break;
     }
@@ -143,9 +143,6 @@ __interrupt void Port_2(void)
               txKeyState = TX_KEY_DOWN;  // to indicate key down
               GPIO_clearInterrupt(STRAIGHT_KEY);
               P2IES ^= BIT7;  // change interrupt edge to detect when key has been released
-              // now enable transmit
-              //selectAudioState(MUTE);
-              GPIO_setOutputHighOnPin(CW_OUT);
           }
           else
           {
@@ -153,9 +150,6 @@ __interrupt void Port_2(void)
               txKeyState = TX_KEY_UP;  // to indicate key up
               GPIO_clearInterrupt(STRAIGHT_KEY);
               P2IES ^= BIT7;  // change interrupt edge to detect when key has been pressed
-              // now enable receive
-              //selectAudioState(UNMUTE);
-              GPIO_setOutputLowOnPin(CW_OUT);
           }
 
           break;                         // Vector  16:  Port 2 Bit 7

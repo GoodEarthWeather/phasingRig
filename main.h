@@ -28,6 +28,7 @@ void initADC(uint8_t);
 void selectMenuFunction(void);
 void getCWSpeed(void);
 void initSideToneTimer(void);
+void updateFrequency(void);
 
 void i2cSendRegister(uint8_t reg, uint8_t data);
 
@@ -74,7 +75,7 @@ void initsi5351(void);
 #define VBAT_SNS GPIO_PORT_P1, GPIO_PIN0
 #define CWSPEED_SNS GPIO_PORT_P1, GPIO_PIN4
 
-#define BTN_CWSPEED GPIO_PORT_P5, GPIO_PIN7
+#define BTN_TXMODE GPIO_PORT_P5, GPIO_PIN7
 #define BTN_MUTE GPIO_PORT_P3, GPIO_PIN3
 #define BTN_DIGIT_SELECT GPIO_PORT_P2, GPIO_PIN3
 #define BTN_FILTER_SELECT GPIO_PORT_P3, GPIO_PIN4
@@ -96,6 +97,7 @@ void initsi5351(void);
 #define FILTER_SELECT GPIO_PORT_P5, GPIO_PIN4
 #define SIDEBAND_SELECT GPIO_PORT_P5, GPIO_PIN5
 #define SIDETONE_OUTPUT GPIO_PORT_P1, GPIO_PIN1
+#define TXMODE_LED GPIO_PORT_P6, GPIO_PIN0
 
 
 // define frequency bands
@@ -112,7 +114,7 @@ void initsi5351(void);
 
 // define names for button presses
 #define BTN_PRESSED_NONE 0x0
-#define BTN_PRESSED_CWSPEED 0x1
+#define BTN_PRESSED_TXMODE 0x1
 #define BTN_PRESSED_MUTE 0x2
 #define BTN_PRESSED_DIGIT_SELECT 0x3
 #define BTN_PRESSED_FILTER_SELECT 0x4
@@ -133,6 +135,7 @@ void initsi5351(void);
 #define MENU_FUNCTION_SIDEBAND 0x0
 #define MENU_FUNCTION_BATVOLTAGE 0x1
 #define MENU_FUNCTION_CWSPEED 0x2
+#define MENU_FUNCTION_RXMODE 0x3
 
 #define UPPER_SIDEBAND 0x0
 #define LOWER_SIDEBAND 0x1
@@ -152,5 +155,8 @@ void initsi5351(void);
 #define BAND_DISPLAY 0x2
 #define MENU_DISPLAY 0x3
 #define FILTER_DISPLAY 0x4
+
+#define RXMODE_CW 0x1
+#define RXMODE_SSB 0x2
 
 #endif /* MYINCLUDE_MAIN_H_ */

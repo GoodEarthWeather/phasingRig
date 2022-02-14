@@ -114,7 +114,7 @@ void initGPIO(void)
        GPIO_PIN0
        );
 
-   // CW speed button
+   // TX Mode button
    GPIO_setAsInputPin(
        GPIO_PORT_P5,
        GPIO_PIN7
@@ -161,9 +161,11 @@ void initGPIO(void)
 
    GPIO_setAsOutputPin(FILTER_SELECT);
    GPIO_setAsOutputPin(SIDEBAND_SELECT);
+   GPIO_setAsOutputPin(TXMODE_LED);
+   GPIO_setOutputLowOnPin(TXMODE_LED);
 
    // enable and clear interrupts
-   GPIO_enableInterrupt(BTN_CWSPEED);
+   GPIO_enableInterrupt(BTN_TXMODE);
    GPIO_enableInterrupt(BTN_MUTE);
    GPIO_enableInterrupt(BTN_DIGIT_SELECT);
    GPIO_enableInterrupt(BTN_FILTER_SELECT);
@@ -173,7 +175,7 @@ void initGPIO(void)
    GPIO_enableInterrupt(BTN_MENU);
    GPIO_enableInterrupt(STRAIGHT_KEY);
 
-   GPIO_clearInterrupt(BTN_CWSPEED);
+   GPIO_clearInterrupt(BTN_TXMODE);
    GPIO_clearInterrupt(BTN_MUTE);
    GPIO_clearInterrupt(BTN_DIGIT_SELECT);
    GPIO_clearInterrupt(BTN_FILTER_SELECT);

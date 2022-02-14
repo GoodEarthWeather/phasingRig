@@ -34,7 +34,14 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define delay_ms(x)     __delay_cycles((long) x* 1000 * 8)
 
+/* In CW mode, receiver frequency is always set to RXOFFSET Hertz above transmit frequency
+ * RXOFFSET should equal the sidetone frequency so that when spotting is performed the correct
+ * transmit frequency is determined.
+ * In SSB mode, there is no receiver offset so that transmit and receive frequency is the same
+ */
+#define RXOFFSET 608
 
 
 ////////////////////////////////
@@ -103,7 +110,14 @@ void si5351_set_RX_freq(unsigned long freq)
   double rm; //remainder
   unsigned long p1, p2, p3;
   extern uint8_t selectedSideband;
+  extern uint8_t receiveMode;
 
+  // add rx offset freq. if in CW mode
+  // check for CW mode
+  if (receiveMode == RXMODE_CW)  // add offset only if in CW receive mode
+      freq += RXOFFSET;
+
+  freq = freq << 2;  // multiply by 4 for Tayloe detector
 
   // set frequency for SYNTH_MS_0 - CLK0 for QSD input
   a = b = c = 1048575;
@@ -163,37 +177,12 @@ void si5351_RXTX_enable(void)
 {
     extern uint8_t txKeyState;
 
+    selectAudioState(MUTE);
     if (txKeyState == TX_KEY_DOWN)
-        i2cSendRegister(CLK_ENABLE_CONTROL, 0xFD);  // tx clock enabled, rx clock disabled
+        //i2cSendRegister(CLK_ENABLE_CONTROL, 0xFD);  // tx clock enabled, rx clock disabled
+        i2cSendRegister(CLK_ENABLE_CONTROL, 0xFF);  // tx clock enabled, rx clock enabled
     else
         i2cSendRegister(CLK_ENABLE_CONTROL, 0xFE);  // rx clock enabled, tx clock disabled
+    delay_ms(5);
+    selectAudioState(UNMUTE);
 }
-/*******************************
-int main(void)
-{
-    unsigned long t1, freq = 10000000;
-    PORTC = 0x30;//I²C-Bus lines: PC4=SDA, PC5=SCL
-
-    twi_init();
-    wait_ms(100);
-    si5351_start();
-    wait_ms(100);
-
-    si5351_set_freq(SYNTH_MS_0, freq);
-    wait_ms(5000);
-
-    for(;;)
-    {
-        //Increase frequency in steps of 1kHz
-        for(t1 = 10000000; t1 < 10090000; t1+=1000)
-        {
-            si5351_set_freq(SYNTH_MS_0, t1);
-            wait_ms(1000);
-        }
-    }
-    return 0;
-}
-********************************/
-
-
-

@@ -168,6 +168,7 @@ void updateDisplay(uint8_t field)
     extern int16_t ritOffset;
     extern uint8_t ritState;
     extern uint8_t audioState;
+    extern uint8_t receiveMode;
     uint8_t i;
     float z;
     uint32_t batV;
@@ -276,6 +277,12 @@ void updateDisplay(uint8_t field)
             case MENU_FUNCTION_CWSPEED :
                 getCWSpeed();
                 setCWSpeedText();
+                break;
+            case MENU_FUNCTION_RXMODE :
+                if (receiveMode == RXMODE_CW)
+                    lcdSetText("RXMODE: CW",0,1);
+                else
+                    lcdSetText("RXMODE: SSB",0,1);
                 break;
             default :
                 break;
