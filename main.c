@@ -19,6 +19,7 @@ uint8_t ritState;
 int16_t ritOffset;
 uint8_t wpm;
 uint8_t audioState;
+uint8_t spotMode;
 
 
 int main(void) {
@@ -31,6 +32,7 @@ int main(void) {
     initGPIO();
     initClocks();
     lcdInit();
+    initSideToneTimer();
 
 
     // measure cw speed pot to get initial wpm setting
@@ -48,6 +50,7 @@ int main(void) {
 
     // set defaults
 
+    spotMode = DISABLED;
     freqMultiplier = 1000;
     selectedBand = BAND_40M;
     selectedFilter = SSB_FILTER;
@@ -156,6 +159,16 @@ int main(void) {
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_SPOT :
+            if ( spotMode == DISABLED)  // button pressed to now put it in spot mode
+            {
+                Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE);  // start side tone
+                spotMode = ENABLED;
+            }
+            else
+            {
+                Timer_A_stop(TIMER_A0_BASE);  // stop side tone
+                spotMode = DISABLED;
+            }
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_TUNE :

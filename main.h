@@ -27,6 +27,7 @@ void getBatteryVoltage(void);
 void initADC(uint8_t);
 void selectMenuFunction(void);
 void getCWSpeed(void);
+void initSideToneTimer(void);
 
 void i2cSendRegister(uint8_t reg, uint8_t data);
 
@@ -70,7 +71,7 @@ void initsi5351(void);
 #define ENCODER_SWITCH GPIO_PORT_P4, GPIO_PIN6
 
 //#define LED1 GPIO_PORT_P1, GPIO_PIN1
-#define VBAT_SNS GPIO_PORT_P1, GPIO_PIN1
+#define VBAT_SNS GPIO_PORT_P1, GPIO_PIN0
 #define CWSPEED_SNS GPIO_PORT_P1, GPIO_PIN4
 
 #define BTN_CWSPEED GPIO_PORT_P5, GPIO_PIN7
@@ -93,7 +94,8 @@ void initsi5351(void);
 #define BAND_17M_SELECT GPIO_PORT_P5, GPIO_PIN0
 #define BAND_15M_SELECT GPIO_PORT_P5, GPIO_PIN1
 #define FILTER_SELECT GPIO_PORT_P5, GPIO_PIN4
-#define SIDEBAND_SELECT GPIO_PORT_P1, GPIO_PIN0
+#define SIDEBAND_SELECT GPIO_PORT_P5, GPIO_PIN5
+#define SIDETONE_OUTPUT GPIO_PORT_P1, GPIO_PIN1
 
 
 // define frequency bands

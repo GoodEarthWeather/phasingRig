@@ -59,10 +59,10 @@ void initGPIO(void)
    );
 
 
-   // Configure P1.1 (A1) as analog ADC input
+   // Configure P1.0 (A0) as analog ADC input for VBAT sensing
    GPIO_setAsPeripheralModuleFunctionInputPin(
            GPIO_PORT_P1,
-           GPIO_PIN1,
+           GPIO_PIN0,
            GPIO_TERNARY_MODULE_FUNCTION
    );
 
@@ -162,7 +162,6 @@ void initGPIO(void)
    GPIO_setAsOutputPin(FILTER_SELECT);
    GPIO_setAsOutputPin(SIDEBAND_SELECT);
 
-
    // enable and clear interrupts
    GPIO_enableInterrupt(BTN_CWSPEED);
    GPIO_enableInterrupt(BTN_MUTE);
@@ -184,6 +183,13 @@ void initGPIO(void)
    GPIO_clearInterrupt(BTN_MENU);
    GPIO_clearInterrupt(STRAIGHT_KEY);
 
+   // Initialize side tone output
+      GPIO_setAsPeripheralModuleFunctionOutputPin(
+          GPIO_PORT_P1,
+          GPIO_PIN1,
+          GPIO_SECONDARY_MODULE_FUNCTION
+          );
+      GPIO_setOutputLowOnPin(GPIO_PORT_P1, GPIO_PIN1);  // set side tone output low
 
 
    /*
@@ -212,14 +218,14 @@ void initADC(uint8_t measureType)
     //Configure Memory Buffer
     /*
      * Base Address for the ADC Module
-     * Use input A1 for VBAT sense input
+     * Use input A0 for VBAT sense input
      * Use positive reference of Internally generated Vref
      * Use negative reference of AVss
      */
     if ( measureType == BATTERY_MEASUREMENT)
     {
         ADC_configureMemory(ADC_BASE,
-        ADC_INPUT_A1,
+        ADC_INPUT_A0,
         ADC_VREFPOS_INT,
         ADC_VREFNEG_AVSS);
         ADC_setResolution (ADC_BASE, ADC_RESOLUTION_12BIT);
@@ -245,4 +251,28 @@ void initADC(uint8_t measureType)
     ADC_disable(ADC_BASE);
 }
 
+// initialize timer A0 for up mode - for side tone
+void initSideToneTimer(void)
+{
+
+    // timer is clocked by 32768 clock
+    // (1/600Hz)/(1/32768Hz) is about 55 counts, so set compare threshold to 55
+    //Start timer in up mode sourced by ACLK
+    Timer_A_initUpModeParam initUpParam = {0};
+    initUpParam.clockSource = TIMER_A_CLOCKSOURCE_ACLK;
+    initUpParam.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_1;
+    initUpParam.timerInterruptEnable_TAIE = TIMER_A_TAIE_INTERRUPT_DISABLE;
+    initUpParam.captureCompareInterruptEnable_CCR0_CCIE = TIMER_A_CCIE_CCR0_INTERRUPT_DISABLE;
+    initUpParam.timerClear = TIMER_A_DO_CLEAR;
+    initUpParam.startTimer = false;
+    initUpParam.timerPeriod = (uint16_t)(26);
+    Timer_A_initUpMode(TIMER_A0_BASE, &initUpParam);
+    Timer_A_setOutputMode(TIMER_A0_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_1,TIMER_A_OUTPUTMODE_TOGGLE);
+
+    //Initiaze compare mode
+    Timer_A_clearCaptureCompareInterrupt(TIMER_A0_BASE,
+        TIMER_A_CAPTURECOMPARE_REGISTER_1
+        );
+
+}
 

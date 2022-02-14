@@ -130,6 +130,7 @@ __interrupt void Port_2(void)
           // P2.4 = Spot button
           buttonPressed = BTN_PRESSED_SPOT;
           GPIO_clearInterrupt(BTN_SPOT);
+          P2IES ^= BIT4;  // change interrupt edge to detect when key has been pressed/released
           break;                         // Vector  10:  Port 2 Bit 4
       case  12: break;                         // Vector  12:  Port 2 Bit 5
       case  14: break;                         // Vector  14:  Port 2 Bit 6
