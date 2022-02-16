@@ -29,6 +29,7 @@ void selectMenuFunction(void);
 void getCWSpeed(void);
 void initSideToneTimer(void);
 void updateFrequency(void);
+void initQSKTimer(void);
 
 void i2cSendRegister(uint8_t reg, uint8_t data);
 

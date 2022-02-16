@@ -275,6 +275,54 @@ void initSideToneTimer(void)
     Timer_A_clearCaptureCompareInterrupt(TIMER_A0_BASE,
         TIMER_A_CAPTURECOMPARE_REGISTER_1
         );
+}
+
+// initialize timer A1 for up mode - for QSK timing
+void initQSKTimer(void)
+{
+
+    // use timer A1
+    //Start timer in continuous mode sourced by AMCLK
+    Timer_A_initContinuousModeParam initContParam = {0};
+    initContParam.clockSource = TIMER_A_CLOCKSOURCE_ACLK;
+    initContParam.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_1;
+    initContParam.timerInterruptEnable_TAIE = TIMER_A_TAIE_INTERRUPT_DISABLE;
+    initContParam.timerClear = TIMER_A_DO_CLEAR;
+    initContParam.startTimer = false;
+    Timer_A_initContinuousMode(TIMER_A1_BASE, &initContParam);
+
+    //Initiaze compare mode
+    Timer_A_clearCaptureCompareInterrupt(TIMER_A1_BASE,
+        TIMER_A_CAPTURECOMPARE_REGISTER_0
+        );
+
+    Timer_A_initCompareModeParam initCompParam = {0};
+    initCompParam.compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_0;
+    initCompParam.compareInterruptEnable = TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABLE;
+    initCompParam.compareOutputMode = TIMER_A_OUTPUTMODE_OUTBITVALUE;
+    initCompParam.compareValue = 9830;   // gives about a 300ms delay
+    Timer_A_initCompareMode(TIMER_A1_BASE, &initCompParam);
+
+    /*
+    Timer_A_startCounter( TIMER_A1_BASE,
+            TIMER_A_CONTINUOUS_MODE
+                );
+
+    Timer_A_stop(TIMER_A1_BASE);
+    */
 
 }
 
+#if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
+#pragma vector=TIMER1_A0_VECTOR
+__interrupt
+#elif defined(__GNUC__)
+__attribute__((interrupt(TIMER1_A1_VECTOR)))
+#endif
+void TIMER1_A0_ISR (void)
+{
+    // QSK timeout reached, so unmute audio and stop timer
+    Timer_A_stop(TIMER_A1_BASE);
+    selectAudioState(UNMUTE);
+
+}

@@ -35,6 +35,7 @@ int main(void) {
     initClocks();
     lcdInit();
     initSideToneTimer();
+    initQSKTimer();
 
 
     // measure cw speed pot to get initial wpm setting
@@ -87,11 +88,23 @@ int main(void) {
         {
             keyStateChanged = 0;
             // sidetone
-            (txKeyState == TX_KEY_DOWN) ?(Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE)) : (Timer_A_stop(TIMER_A0_BASE));
+            (txKeyState == TX_KEY_DOWN) ?(Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE)) : (Timer_A_stop(TIMER_A0_BASE));  //start sidetone timer
             if (txMode == ENABLED)  // transmitter is enabled
             {
+                selectAudioState(MUTE);
+                //si5351_RXTX_enable();
+                //(txKeyState == TX_KEY_DOWN) ? (GPIO_setOutputHighOnPin(CW_OUT)) : (GPIO_setOutputLowOnPin(CW_OUT));
+                if (txKeyState == TX_KEY_DOWN)
+                {
+                    GPIO_setOutputHighOnPin(CW_OUT);
+                }
+                else  // txKeyState is TX_KEY_UP
+                {
+                    GPIO_setOutputLowOnPin(CW_OUT);
+                    Timer_A_clear(TIMER_A1_BASE);  // reset QSK timer
+                    Timer_A_startCounter( TIMER_A1_BASE,TIMER_A_CONTINUOUS_MODE);
+                }
                 si5351_RXTX_enable();
-                (txKeyState == TX_KEY_DOWN) ? (GPIO_setOutputHighOnPin(CW_OUT)) : (GPIO_setOutputLowOnPin(CW_OUT));
             }
         }
 
