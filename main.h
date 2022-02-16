@@ -29,7 +29,8 @@ void selectMenuFunction(void);
 void getCWSpeed(void);
 void initSideToneTimer(void);
 void updateFrequency(void);
-void initQSKTimer(void);
+void initQSKTimer(uint16_t);
+void updateQSKDelay(void);
 
 void i2cSendRegister(uint8_t reg, uint8_t data);
 
@@ -137,6 +138,9 @@ void initsi5351(void);
 #define MENU_FUNCTION_BATVOLTAGE 0x1
 #define MENU_FUNCTION_CWSPEED 0x2
 #define MENU_FUNCTION_RXMODE 0x3
+#define MENU_FUNCTION_QSK_DELAY 0x4
+
+#define MAX_QSK_DELAY 800   // 800 ms
 
 #define UPPER_SIDEBAND 0x0
 #define LOWER_SIDEBAND 0x1

@@ -22,6 +22,7 @@ uint8_t audioState; // indicates whether receiver is muted or not
 uint8_t spotMode;  // enables sidetone for setting zero beat with incoming signal
 uint8_t txMode;  // enable or disable transmitter
 uint8_t receiveMode;  // indicates whether receiver is set for receiving CW (rxoffset added) or SSB (no offset)
+uint16_t qskDelay = 300;  // breakin delay in milliseconds
 
 
 int main(void) {
@@ -35,7 +36,7 @@ int main(void) {
     initClocks();
     lcdInit();
     initSideToneTimer();
-    initQSKTimer();
+    initQSKTimer(qskDelay);  // initialize for 300ms delay
 
 
     // measure cw speed pot to get initial wpm setting
@@ -92,8 +93,6 @@ int main(void) {
             if (txMode == ENABLED)  // transmitter is enabled
             {
                 selectAudioState(MUTE);
-                //si5351_RXTX_enable();
-                //(txKeyState == TX_KEY_DOWN) ? (GPIO_setOutputHighOnPin(CW_OUT)) : (GPIO_setOutputLowOnPin(CW_OUT));
                 if (txKeyState == TX_KEY_DOWN)
                 {
                     GPIO_setOutputHighOnPin(CW_OUT);
@@ -117,6 +116,11 @@ int main(void) {
                 updateDisplay(MENU_DISPLAY);
                 encoderCWCount = encoderCCWCount = 0;
                 si5351_set_RX_freq(si5351FreqOut);
+            }
+            else if (selectedMenuFunction == MENU_FUNCTION_QSK_DELAY)
+            {
+                updateQSKDelay();
+                initQSKTimer(qskDelay);
             }
             else
                 updateFrequency();
@@ -143,15 +147,9 @@ int main(void) {
         case BTN_PRESSED_MUTE :
             (audioState == MUTE) ? (audioState = UNMUTE) : (audioState = MUTE);
             selectAudioState(audioState);
+            updateDisplay(MENU_DISPLAY);
             buttonPressed = BTN_PRESSED_NONE;
             break;
-            /*
-        case BTN_PRESSED_SB_SELECT :
-            (selectedSideband == UPPER_SIDEBAND) ? (selectedSideband = LOWER_SIDEBAND):(selectedSideband = UPPER_SIDEBAND);
-            selectSideband();
-            buttonPressed = BTN_PRESSED_NONE;
-            break;
-            */
         case BTN_PRESSED_FILTER_SELECT :
             (selectedFilter == CW_FILTER) ? (selectedFilter = SSB_FILTER) : (selectedFilter = CW_FILTER);
             selectFilter();
@@ -159,15 +157,7 @@ int main(void) {
             break;
         case BTN_PRESSED_BAND_SELECT :
             selectAudioState(MUTE);
-            if (selectedBand == BAND_15M)
-            {
-                si5351_start(); // going from 15M to 40M band, so need to reset pllB to a fixed value
-                selectedBand = BAND_40M;
-            }
-            else
-            {
-                selectedBand++;
-            }
+            (selectedBand == BAND_15M) ? (selectedBand = BAND_40M) : (selectedBand++);
             selectBand();
             if (audioState != MUTE)
                 selectAudioState(UNMUTE);
@@ -190,7 +180,7 @@ int main(void) {
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_MENU :
-            (selectedMenuFunction == MENU_FUNCTION_RXMODE) ? (selectedMenuFunction = MENU_FUNCTION_SIDEBAND) : selectedMenuFunction++;
+            (selectedMenuFunction == MENU_FUNCTION_QSK_DELAY) ? (selectedMenuFunction = MENU_FUNCTION_SIDEBAND) : (selectedMenuFunction++);
             selectMenuFunction();
             buttonPressed = BTN_PRESSED_NONE;
             break;
@@ -335,7 +325,7 @@ void selectSideband(void)
         GPIO_setOutputHighOnPin(SIDEBAND_SELECT);  // need to check
     else
         GPIO_setOutputLowOnPin(SIDEBAND_SELECT); // need to check
-    updateDisplay(BAND_DISPLAY);
+    //updateDisplay(BAND_DISPLAY);
 }
 
 // routine to set audio state - mute or unmute
@@ -345,7 +335,6 @@ void selectAudioState(uint8_t state)
         GPIO_setOutputHighOnPin(TR_MUTE); // set high for mute pin
     else if (state == UNMUTE)
         GPIO_setOutputLowOnPin(TR_MUTE); // set low for unmute pin
-    updateDisplay(MENU_DISPLAY);
 }
 
 // routine to select desired menu functions
@@ -364,6 +353,8 @@ void selectMenuFunction(void)
         initADC(CWSPEED_MEASUREMENT);
         break;
     case MENU_FUNCTION_RXMODE :
+        break;
+    case MENU_FUNCTION_QSK_DELAY :
         break;
     default :
         break;
@@ -432,6 +423,33 @@ void updateFrequency(void)
             updateDisplay(FREQ_DISPLAY);
             if (ritState == ENABLED)
                 updateDisplay(MENU_DISPLAY);
+        }
+    }
+encoderCWCount = encoderCCWCount = 0;
+
+}
+
+// This routine will update the qskDelay setting and display
+void updateQSKDelay(void)
+{
+    uint32_t deltaDelay;
+
+    if ( encoderCWCount > encoderCCWCount ) // net count indicates increase
+    {
+        deltaDelay = encoderCWCount - encoderCCWCount;
+        if ( (qskDelay + 10*deltaDelay) <= MAX_QSK_DELAY )
+        {
+            qskDelay += 10*deltaDelay;
+            updateDisplay(MENU_DISPLAY);
+        }
+    }
+    else if ( encoderCWCount < encoderCCWCount )  // decrease
+    {
+        deltaDelay = encoderCCWCount - encoderCWCount;
+        if ( qskDelay != 0 )
+        {
+            qskDelay -= 10*deltaDelay;
+            updateDisplay(MENU_DISPLAY);
         }
     }
 encoderCWCount = encoderCCWCount = 0;

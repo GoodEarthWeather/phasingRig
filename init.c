@@ -278,8 +278,11 @@ void initSideToneTimer(void)
 }
 
 // initialize timer A1 for up mode - for QSK timing
-void initQSKTimer(void)
+void initQSKTimer(uint16_t delay)
 {
+    uint16_t compareValue;
+    // convert delay in milliseconds to a compare value
+    compareValue = (uint16_t)((float)delay*32.768);
 
     // use timer A1
     //Start timer in continuous mode sourced by AMCLK
@@ -300,17 +303,8 @@ void initQSKTimer(void)
     initCompParam.compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_0;
     initCompParam.compareInterruptEnable = TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABLE;
     initCompParam.compareOutputMode = TIMER_A_OUTPUTMODE_OUTBITVALUE;
-    initCompParam.compareValue = 9830;   // gives about a 300ms delay
+    initCompParam.compareValue = compareValue;
     Timer_A_initCompareMode(TIMER_A1_BASE, &initCompParam);
-
-    /*
-    Timer_A_startCounter( TIMER_A1_BASE,
-            TIMER_A_CONTINUOUS_MODE
-                );
-
-    Timer_A_stop(TIMER_A1_BASE);
-    */
-
 }
 
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
