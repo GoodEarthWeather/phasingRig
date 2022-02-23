@@ -134,11 +134,10 @@ void initsi5351(void);
 #define BAND_15M 0x4
 
 // define menu functions
-#define MENU_FUNCTION_SIDEBAND 0x0
-#define MENU_FUNCTION_BATVOLTAGE 0x1
-#define MENU_FUNCTION_CWSPEED 0x2
-#define MENU_FUNCTION_RXMODE 0x3
-#define MENU_FUNCTION_QSK_DELAY 0x4
+#define MENU_FUNCTION_BATVOLTAGE 0x0
+#define MENU_FUNCTION_CWSPEED 0x1
+#define MENU_FUNCTION_RXMODE 0x2
+#define MENU_FUNCTION_QSK_DELAY 0x3
 
 #define MAX_QSK_DELAY 800   // 800 ms
 
@@ -159,9 +158,10 @@ void initsi5351(void);
 #define FREQ_DISPLAY 0x1
 #define BAND_DISPLAY 0x2
 #define MENU_DISPLAY 0x3
-#define FILTER_DISPLAY 0x4
+#define MODE_DISPLAY 0x4
 
-#define RXMODE_CW 0x1
-#define RXMODE_SSB 0x2
+#define RXMODE_CW 0x0
+#define RXMODE_USB 0x1
+#define RXMODE_LSB 0x2
 
 #endif /* MYINCLUDE_MAIN_H_ */

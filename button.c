@@ -122,7 +122,7 @@ __interrupt void Port_2(void)
       case  4: break;                         // Vector  4:  Port 2 Bit 1
       case  6: break;                         // Vector  6:  Port 2 Bit 2
       case  8:
-          // P2.3 = Sideband select button
+          // P2.3 = Digit select button
           buttonPressed = BTN_PRESSED_DIGIT_SELECT;
           GPIO_clearInterrupt(BTN_DIGIT_SELECT);
           break;                         // Vector  8:  Port 2 Bit 3

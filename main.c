@@ -67,6 +67,8 @@ int main(void) {
     selectSideband();
     selectMenuFunction();
 
+    updateDisplay(MODE_DISPLAY);
+
     // set initial si5351 clock to 7MHz
     si5351FreqOut = BAND_40M_LOWER;
     si5351_set_RX_freq(si5351FreqOut);
@@ -112,8 +114,24 @@ int main(void) {
         {
             if (selectedMenuFunction == MENU_FUNCTION_RXMODE)
             {
-                (receiveMode == RXMODE_CW) ? (receiveMode = RXMODE_SSB) : (receiveMode = RXMODE_CW);
+                if (receiveMode == RXMODE_LSB)
+                {
+                    receiveMode = RXMODE_CW;
+                    (selectedBand == BAND_40M) ? (selectedSideband= LOWER_SIDEBAND) : (selectedSideband = UPPER_SIDEBAND);
+                }
+                else if (receiveMode == RXMODE_USB)
+                {
+                    receiveMode = RXMODE_LSB;
+                    selectedSideband = LOWER_SIDEBAND;
+                }
+                else
+                {
+                    receiveMode = RXMODE_USB;
+                    selectedSideband = UPPER_SIDEBAND;
+                }
+                selectSideband();
                 updateDisplay(MENU_DISPLAY);
+                updateDisplay(MODE_DISPLAY);
                 encoderCWCount = encoderCCWCount = 0;
                 si5351_set_RX_freq(si5351FreqOut);
             }
@@ -180,19 +198,12 @@ int main(void) {
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_MENU :
-            (selectedMenuFunction == MENU_FUNCTION_QSK_DELAY) ? (selectedMenuFunction = MENU_FUNCTION_SIDEBAND) : (selectedMenuFunction++);
+            (selectedMenuFunction == MENU_FUNCTION_QSK_DELAY) ? (selectedMenuFunction = MENU_FUNCTION_BATVOLTAGE) : (selectedMenuFunction++);
             selectMenuFunction();
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_DIGIT_SELECT :
-            if (freqMultiplier == 10000)
-            {
-                freqMultiplier = 10;
-            }
-            else
-            {
-                freqMultiplier *= 10;
-            }
+            (freqMultiplier == 10000) ? (freqMultiplier = 10) : (freqMultiplier *= 10);
             moveFreqCursor();
             buttonPressed = BTN_PRESSED_NONE;
             break;
@@ -301,11 +312,13 @@ void selectBand(void)
     // reset menu function
     ritState = DISABLED;
     ritOffset = 0;
+    receiveMode = RXMODE_CW;
     initADC(BATTERY_MEASUREMENT);
     selectedMenuFunction = MENU_FUNCTION_BATVOLTAGE;
     updateDisplay(BAND_DISPLAY);
     updateDisplay(MENU_DISPLAY);
     updateDisplay(FREQ_DISPLAY);
+    updateDisplay(MODE_DISPLAY);
 }
 
 // routine to select filter
@@ -315,17 +328,15 @@ void selectFilter(void)
         GPIO_setOutputLowOnPin(FILTER_SELECT);  // set low for CW filter
     else
         GPIO_setOutputHighOnPin(FILTER_SELECT); // set high for SSB filter
-    updateDisplay(FILTER_DISPLAY);
 }
 
-// routine to select filter
+// routine to select sideband
 void selectSideband(void)
 {
     if (selectedSideband == UPPER_SIDEBAND)
         GPIO_setOutputHighOnPin(SIDEBAND_SELECT);  // need to check
     else
         GPIO_setOutputLowOnPin(SIDEBAND_SELECT); // need to check
-    //updateDisplay(BAND_DISPLAY);
 }
 
 // routine to set audio state - mute or unmute
@@ -342,10 +353,6 @@ void selectMenuFunction(void)
 {
     switch ( selectedMenuFunction )
     {
-    case MENU_FUNCTION_SIDEBAND :
-        selectAudioState(UNMUTE);
-        // this function will just display the current sideband; no changing of sideband
-        break;
     case MENU_FUNCTION_BATVOLTAGE :
         initADC(BATTERY_MEASUREMENT);
         break;

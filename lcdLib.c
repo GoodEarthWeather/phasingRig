@@ -260,12 +260,6 @@ void updateDisplay(uint8_t field)
         {
             switch (selectedMenuFunction)
             {
-            case MENU_FUNCTION_SIDEBAND :
-                if (selectedSideband == UPPER_SIDEBAND)
-                    lcdSetText("USB",0,1);
-                else
-                    lcdSetText("LSB",0,1);
-                break;
             case MENU_FUNCTION_BATVOLTAGE :
                 getBatteryVoltage();
                 // assume external resistor divider is 0.1 and full scale is 1.5V
@@ -282,8 +276,10 @@ void updateDisplay(uint8_t field)
             case MENU_FUNCTION_RXMODE :
                 if (receiveMode == RXMODE_CW)
                     lcdSetText("RXMODE: CW",0,1);
+                else if (receiveMode == RXMODE_USB)
+                    lcdSetText("RXMODE: USB",0,1);
                 else
-                    lcdSetText("RXMODE: SSB",0,1);
+                    lcdSetText("RXMODE: LSB",0,1);
                 break;
             case MENU_FUNCTION_QSK_DELAY :
                 lcdSetText("QSK: ",0,1);
@@ -299,14 +295,16 @@ void updateDisplay(uint8_t field)
             }
         }
     }
-    else if (field == FILTER_DISPLAY)
+    else if (field == MODE_DISPLAY)
     {
         lcdSetText("   ",0xD,1);
         // display filter selection
-        if (selectedFilter == SSB_FILTER)
-            lcdSetText("SSB",0xD,1);
-        else
+        if (receiveMode == RXMODE_CW)
             lcdSetText(" CW",0xD,1);
+        else if (receiveMode == RXMODE_USB)
+            lcdSetText("USB",0xD,1);
+        else
+            lcdSetText("LSB",0xD,1);
     }
     moveFreqCursor();
 }

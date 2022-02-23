@@ -115,7 +115,9 @@ void si5351_set_RX_freq(unsigned long freq)
   // add rx offset freq. if in CW mode
   // check for CW mode
   if (receiveMode == RXMODE_CW)  // add offset only if in CW receive mode
-      freq += RXOFFSET;
+  {
+      (selectedSideband == LOWER_SIDEBAND) ? (freq += RXOFFSET) : (freq -= RXOFFSET);
+  }
 
   freq = freq << 2;  // multiply by 4 for Tayloe detector
 
