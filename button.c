@@ -22,8 +22,15 @@ __interrupt void Port_4(void)
           GPIO_clearInterrupt(BTN_MENU);
 
           break;                         // Vector  2:  Port 4 Bit 0
-      case  4: break;                         // Vector  4:  Port 4 Bit 1
+      case  4:
+          // P4.1 = Dit key
+          buttonPressed = BTN_PRESSED_DIT;
+          GPIO_clearInterrupt(DIT_KEY);
+          break;                         // Vector  4:  Port 4 Bit 1
       case  6:
+          // P4.1 = Dah key
+          buttonPressed = BTN_PRESSED_DAH;
+          GPIO_clearInterrupt(DAH_KEY);
           break;                         // Vector  6:  Port 4 Bit 2
       case  8: break;                         // Vector  8:  Port 4 Bit 3
       case  10: break;                         // Vector  10:  Port 4 Bit 4

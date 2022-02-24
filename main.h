@@ -26,11 +26,15 @@ void setBatVoltText(uint32_t);
 void getBatteryVoltage(void);
 void initADC(uint8_t);
 void selectMenuFunction(void);
-void getCWSpeed(void);
 void initSideToneTimer(void);
 void updateFrequency(void);
 void initQSKTimer(uint16_t);
 void updateQSKDelay(void);
+void dit(void);
+void dah(void);
+void initKeyTimer(uint8_t);
+void updateCWSpeed(void);
+void ditdah(uint8_t);
 
 void i2cSendRegister(uint8_t reg, uint8_t data);
 
@@ -125,6 +129,8 @@ void initsi5351(void);
 #define BTN_PRESSED_TUNE 0x7
 #define BTN_PRESSED_MENU 0x8
 #define BTN_PRESSED_ENCODER 0x9
+#define BTN_PRESSED_DIT 0xA
+#define BTN_PRESSED_DAH 0xB
 
 // define bands
 #define BAND_40M 0x0
@@ -140,6 +146,8 @@ void initsi5351(void);
 #define MENU_FUNCTION_QSK_DELAY 0x3
 
 #define MAX_QSK_DELAY 800   // 800 ms
+#define MAX_CW_SPEED 30   // wpm
+#define MIN_CW_SPEED 5    / wpm
 
 #define UPPER_SIDEBAND 0x0
 #define LOWER_SIDEBAND 0x1
@@ -148,6 +156,9 @@ void initsi5351(void);
 
 #define MUTE 0x1
 #define UNMUTE 0x0
+
+#define DIT 0x1
+#define DAH 0x3
 
 #define TX_KEY_UP 0x0
 #define TX_KEY_DOWN 0x1

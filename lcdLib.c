@@ -270,7 +270,6 @@ void updateDisplay(uint8_t field)
                 setBatVoltText(batV);
                 break;
             case MENU_FUNCTION_CWSPEED :
-                getCWSpeed();
                 setCWSpeedText();
                 break;
             case MENU_FUNCTION_RXMODE :

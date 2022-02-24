@@ -29,7 +29,6 @@ int main(void) {
 
 
     extern uint8_t volatile buttonPressed;
-    uint8_t temp;
 
     WDT_A_hold(WDT_A_BASE);
     initGPIO();
@@ -37,11 +36,8 @@ int main(void) {
     lcdInit();
     initSideToneTimer();
     initQSKTimer(qskDelay);  // initialize for 300ms delay
-
-
-    // measure cw speed pot to get initial wpm setting
-    initADC(CWSPEED_MEASUREMENT);
-    getCWSpeed();
+    wpm = 15;
+    initKeyTimer(wpm);  // initialize keyer timer for 15 WMP
     initADC(BATTERY_MEASUREMENT);
 
     si5351_start();
@@ -140,6 +136,11 @@ int main(void) {
                 updateQSKDelay();
                 initQSKTimer(qskDelay);
             }
+            else if (selectedMenuFunction == MENU_FUNCTION_CWSPEED)
+            {
+                updateCWSpeed();
+                initKeyTimer(wpm);  // update timer with new speed
+            }
             else
                 updateFrequency();
         }
@@ -215,18 +216,17 @@ int main(void) {
             updateDisplay(MENU_DISPLAY);
             buttonPressed = BTN_PRESSED_NONE;
             break;
+        case BTN_PRESSED_DIT :
+            buttonPressed = BTN_PRESSED_NONE;
+            ditdah(DIT);
+            break;
+        case BTN_PRESSED_DAH :
+            buttonPressed = BTN_PRESSED_NONE;
+            ditdah(DAH);
+            break;
         default :
             // if no buttons have been pressed and selected menu function is CW speed, need to check if pot has moved and update display if so
             break;
-        }
-        if (selectedMenuFunction == MENU_FUNCTION_CWSPEED)
-        {
-            temp = wpm; // save current wpm
-            getCWSpeed();
-            if ( wpm != temp)  // if not equal, CW speed pot must have changed, so update display
-            {
-                updateDisplay(MENU_DISPLAY);
-            }
         }
     }
 }
@@ -357,7 +357,6 @@ void selectMenuFunction(void)
         initADC(BATTERY_MEASUREMENT);
         break;
     case MENU_FUNCTION_CWSPEED :
-        initADC(CWSPEED_MEASUREMENT);
         break;
     case MENU_FUNCTION_RXMODE :
         break;
@@ -381,24 +380,6 @@ void getBatteryVoltage(void)
     // get results
     batteryVoltage = (uint16_t)ADC_getResults(ADC_BASE);
     ADC_disable(ADC_BASE);
-}
-
-// routine to measure CW speed pot
-void getCWSpeed(void)
-{
-    uint16_t cwSpeedVoltage;
-
-    ADC_enable(ADC_BASE);
-    // start ADC conversion
-    ADC_startConversion(ADC_BASE,ADC_SINGLECHANNEL);
-    while (ADC_isBusy(ADC_BASE) == ADC_BUSY) {;}
-
-    // get results
-    cwSpeedVoltage = (uint16_t)ADC_getResults(ADC_BASE);
-    ADC_disable(ADC_BASE);
-
-    // compute wpm
-    wpm = ((25*cwSpeedVoltage)/888 + 3);
 }
 
 // This routine will update the frequency setting and display
@@ -460,5 +441,30 @@ void updateQSKDelay(void)
         }
     }
 encoderCWCount = encoderCCWCount = 0;
+}
 
+// This routine will update the CW speed setting and display
+void updateCWSpeed(void)
+{
+    uint32_t delta;
+
+    if ( encoderCWCount > encoderCCWCount ) // net count indicates increase
+    {
+        delta = encoderCWCount - encoderCCWCount;
+        if ( (wpm + delta) <= MAX_CW_SPEED )
+        {
+            wpm += delta;
+            updateDisplay(MENU_DISPLAY);
+        }
+    }
+    else if ( encoderCWCount < encoderCCWCount )  // decrease
+    {
+        delta = encoderCCWCount - encoderCWCount;
+        if ( wpm >= MIN_CW_SPEED )
+        {
+            wpm -= delta;
+            updateDisplay(MENU_DISPLAY);
+        }
+    }
+encoderCWCount = encoderCCWCount = 0;
 }

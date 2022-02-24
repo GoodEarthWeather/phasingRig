@@ -108,10 +108,10 @@ void initGPIO(void)
 
 
    // Configure all button inputs
-   // Menu button
+   // Menu button, dit, dah keys
    GPIO_setAsInputPin(
        GPIO_PORT_P4,
-       GPIO_PIN0
+       GPIO_PIN0 +GPIO_PIN1 + GPIO_PIN2
        );
 
    // TX Mode button
@@ -133,7 +133,7 @@ void initGPIO(void)
        );
 
    // select interrupt edges
-   GPIO_selectInterruptEdge(GPIO_PORT_P4, GPIO_PIN0, GPIO_HIGH_TO_LOW_TRANSITION);
+   GPIO_selectInterruptEdge(GPIO_PORT_P4, GPIO_PIN0 + GPIO_PIN1 + GPIO_PIN2, GPIO_HIGH_TO_LOW_TRANSITION);
    GPIO_selectInterruptEdge(GPIO_PORT_P5, GPIO_PIN7, GPIO_HIGH_TO_LOW_TRANSITION);
    GPIO_selectInterruptEdge(GPIO_PORT_P3, GPIO_PIN1 + GPIO_PIN3 + GPIO_PIN4 + GPIO_PIN7, GPIO_HIGH_TO_LOW_TRANSITION);
    GPIO_selectInterruptEdge(GPIO_PORT_P2, GPIO_PIN3 + GPIO_PIN4 + GPIO_PIN7, GPIO_HIGH_TO_LOW_TRANSITION);
@@ -174,6 +174,8 @@ void initGPIO(void)
    GPIO_enableInterrupt(BTN_TUNE);
    GPIO_enableInterrupt(BTN_MENU);
    GPIO_enableInterrupt(STRAIGHT_KEY);
+   GPIO_enableInterrupt(DIT_KEY);
+   GPIO_enableInterrupt(DAH_KEY);
 
    GPIO_clearInterrupt(BTN_TXMODE);
    GPIO_clearInterrupt(BTN_MUTE);
@@ -184,6 +186,8 @@ void initGPIO(void)
    GPIO_clearInterrupt(BTN_TUNE);
    GPIO_clearInterrupt(BTN_MENU);
    GPIO_clearInterrupt(STRAIGHT_KEY);
+   GPIO_clearInterrupt(DIT_KEY);
+   GPIO_clearInterrupt(DAH_KEY);
 
    // Initialize side tone output
       GPIO_setAsPeripheralModuleFunctionOutputPin(
@@ -318,5 +322,29 @@ void TIMER1_A0_ISR (void)
     // QSK timeout reached, so unmute audio and stop timer
     Timer_A_stop(TIMER_A1_BASE);
     selectAudioState(UNMUTE);
-
 }
+
+// initialize timer A2 for up mode
+void initKeyTimer(uint8_t wpm)
+{
+    uint16_t count;
+
+    count = 39322/wpm;
+    //Start timer in up mode sourced by ACLK
+    Timer_A_initUpModeParam initUpParam = {0};
+    initUpParam.clockSource = TIMER_A_CLOCKSOURCE_ACLK;
+    initUpParam.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_1;
+    initUpParam.timerInterruptEnable_TAIE = TIMER_A_TAIE_INTERRUPT_DISABLE;
+    initUpParam.captureCompareInterruptEnable_CCR0_CCIE = TIMER_A_CCIE_CCR0_INTERRUPT_DISABLE;
+    initUpParam.timerClear = TIMER_A_DO_CLEAR;
+    initUpParam.startTimer = false;
+    initUpParam.timerPeriod = count;
+    Timer_A_initUpMode(TIMER_A2_BASE, &initUpParam);
+
+    //Initiaze compare mode
+    Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE,
+        TIMER_A_CAPTURECOMPARE_REGISTER_0
+        );
+    Timer_A_startCounter(TIMER_A2_BASE,TIMER_A_UP_MODE);  // start timer
+}
+
