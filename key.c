@@ -9,64 +9,7 @@
 #include "main.h"
 #include "lcdlib.h"
 
-
-// This routine is to handle a dit key press
-void dit(void)
-{
-    uint8_t done;
-    do {
-
-        // dit key pressed; set output high for one unit
-        Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE);  // start side tone
-        Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
-        Timer_A_clear(TIMER_A2_BASE);  // clear key timer
-        do {
-            done = Timer_A_getCaptureCompareInterruptStatus(TIMER_A2_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0,TIMER_A_CAPTURECOMPARE_INTERRUPT_FLAG);
-        } while (done != TIMER_A_CAPTURECOMPARE_INTERRUPT_FLAG);
-        //lastKey = DIT;
-
-        //  wait one unit
-        Timer_A_stop(TIMER_A0_BASE);  // stop side tone
-        Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
-        do {
-            done = Timer_A_getCaptureCompareInterruptStatus(TIMER_A2_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0,TIMER_A_CAPTURECOMPARE_INTERRUPT_FLAG);
-        } while (done != TIMER_A_CAPTURECOMPARE_INTERRUPT_FLAG);
-        Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
-    } while (GPIO_getInputPinValue(DIT_KEY) == GPIO_INPUT_PIN_LOW);
-}
-
-// This routine is to handle the dah key
-void dah(void)
-{
-    uint8_t done;
-    uint8_t dahCount;
-
-    do {
-        // dah key pressed
-        Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE);  // start side tone
-        Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
-        Timer_A_clear(TIMER_A2_BASE);  // clear timer
-        dahCount = 0;
-        while (dahCount < 3)
-        {
-            done = Timer_A_getCaptureCompareInterruptStatus(TIMER_A2_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0,TIMER_A_CAPTURECOMPARE_INTERRUPT_FLAG);
-            if (done == TIMER_A_CAPTURECOMPARE_INTERRUPT_FLAG)
-            {
-                dahCount++;
-                Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
-            }
-        }
-        // lastKey = DAH;
-        //  wait one unit
-        Timer_A_stop(TIMER_A0_BASE);  // stop side tone
-        Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
-        do {
-            done = Timer_A_getCaptureCompareInterruptStatus(TIMER_A2_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0,TIMER_A_CAPTURECOMPARE_INTERRUPT_FLAG);
-        } while (done != TIMER_A_CAPTURECOMPARE_INTERRUPT_FLAG);
-        Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
-    } while (GPIO_getInputPinValue(DAH_KEY) == GPIO_INPUT_PIN_LOW);
-
-}
+uint8_t iambicMode;
 
 // This routine is to handle the dit and dah key
 // 'key' is either DIT or DAH (i.e. 1 or 3)
@@ -74,8 +17,28 @@ void ditdah(uint8_t key)
 {
     uint8_t done;
     uint8_t count;
+    uint8_t ditKeyState;
+    uint8_t dahKeyState;
+
+    iambicMode = 0;
 
     do {
+        ditKeyState = GPIO_getInputPinValue(DIT_KEY);
+        dahKeyState = GPIO_getInputPinValue(DAH_KEY);
+        // iambic test
+        if ( (dahKeyState == GPIO_INPUT_PIN_LOW) && (ditKeyState == GPIO_INPUT_PIN_LOW) )  // iambic mode, so alternate dit/dah
+        {
+            (key == DIT) ? (key = DAH) : (key = DIT);
+            iambicMode = 1;
+        } else {
+            iambicMode = 0;
+            // not in iambic mode, so set key to whatever key remains pressed
+            (dahKeyState == GPIO_INPUT_PIN_LOW) ? (key = DAH) : (key = DIT);
+            // end of iambic test
+        }
+
+        if ((ditKeyState == GPIO_INPUT_PIN_HIGH) && (dahKeyState == GPIO_INPUT_PIN_HIGH))
+            break;
 
         Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE);  // start side tone
         Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
@@ -97,16 +60,16 @@ void ditdah(uint8_t key)
             done = Timer_A_getCaptureCompareInterruptStatus(TIMER_A2_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0,TIMER_A_CAPTURECOMPARE_INTERRUPT_FLAG);
         } while (done != TIMER_A_CAPTURECOMPARE_INTERRUPT_FLAG);
         Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
-        /*************
-        if ((GPIO_getInputPinValue(DAH_KEY) == GPIO_INPUT_PIN_LOW) && (GPIO_getInputPinValue(DIT_KEY) == GPIO_INPUT_PIN_LOW) )  // iambic mode, so alternate dit/dah
-        {
-            (key == DIT) ? (key = DAH) : (key = DIT);
-        }
-        ***************/
-        if ((key == DIT) && (GPIO_getInputPinValue(DIT_KEY) == GPIO_INPUT_PIN_HIGH))
+
+
+        ditKeyState = GPIO_getInputPinValue(DIT_KEY);
+        dahKeyState = GPIO_getInputPinValue(DAH_KEY);
+
+        if ((key == DIT) && (ditKeyState == GPIO_INPUT_PIN_HIGH))
             break;
-        if ((key == DAH) && (GPIO_getInputPinValue(DAH_KEY) == GPIO_INPUT_PIN_HIGH))
+        if ((key == DAH) && (dahKeyState == GPIO_INPUT_PIN_HIGH))
             break;
-    } while ((GPIO_getInputPinValue(DAH_KEY) == GPIO_INPUT_PIN_LOW) || (GPIO_getInputPinValue(DIT_KEY) == GPIO_INPUT_PIN_LOW));
+
+    } while (((dahKeyState) == GPIO_INPUT_PIN_LOW) || (ditKeyState == GPIO_INPUT_PIN_LOW));
 
 }

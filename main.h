@@ -30,8 +30,6 @@ void initSideToneTimer(void);
 void updateFrequency(void);
 void initQSKTimer(uint16_t);
 void updateQSKDelay(void);
-void dit(void);
-void dah(void);
 void initKeyTimer(uint8_t);
 void updateCWSpeed(void);
 void ditdah(uint8_t);
