@@ -7,9 +7,11 @@
 
 #include "driverlib.h"
 #include "main.h"
-#include "lcdlib.h"
+#include "lcdLib.h"
 
 uint8_t iambicMode;
+static void keyDown(void);
+static void keyUp(void);
 
 // This routine is to handle the dit and dah key
 // 'key' is either DIT or DAH (i.e. 1 or 3)
@@ -19,8 +21,9 @@ void ditdah(uint8_t key)
     uint8_t count;
     uint8_t ditKeyState;
     uint8_t dahKeyState;
+    extern uint8_t txMode;
 
-    iambicMode = 0;
+    iambicMode = DISABLED;
 
     do {
         ditKeyState = GPIO_getInputPinValue(DIT_KEY);
@@ -29,9 +32,9 @@ void ditdah(uint8_t key)
         if ( (dahKeyState == GPIO_INPUT_PIN_LOW) && (ditKeyState == GPIO_INPUT_PIN_LOW) )  // iambic mode, so alternate dit/dah
         {
             (key == DIT) ? (key = DAH) : (key = DIT);
-            iambicMode = 1;
+            iambicMode = ENABLED;
         } else {
-            iambicMode = 0;
+            iambicMode = DISABLED;
             // not in iambic mode, so set key to whatever key remains pressed
             (dahKeyState == GPIO_INPUT_PIN_LOW) ? (key = DAH) : (key = DIT);
             // end of iambic test
@@ -41,6 +44,9 @@ void ditdah(uint8_t key)
             break;
 
         Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE);  // start side tone
+        // if transmitter enabled, turn on
+        if (txMode == ENABLED)
+            keyDown();
         Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
         Timer_A_clear(TIMER_A2_BASE);  // clear timer
         count = 0;
@@ -54,6 +60,8 @@ void ditdah(uint8_t key)
             }
         }
         //  wait one unit
+        if (txMode == ENABLED)
+            keyUp();
         Timer_A_stop(TIMER_A0_BASE);  // stop side tone
         Timer_A_clearCaptureCompareInterrupt(TIMER_A2_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
         do {
@@ -71,5 +79,37 @@ void ditdah(uint8_t key)
             break;
 
     } while (((dahKeyState) == GPIO_INPUT_PIN_LOW) || (ditKeyState == GPIO_INPUT_PIN_LOW));
+
+}
+
+// This routine will start transmission
+static void keyDown(void)
+{
+    extern uint8_t txKeyState;
+
+    selectAudioState(MUTE);
+    // stop qsk timer
+    Timer_A_stop(TIMER_A1_BASE);
+    Timer_A_clearCaptureCompareInterrupt(TIMER_A1_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0);
+    Timer_A_disableCaptureCompareInterrupt(TIMER_A1_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0);
+
+    GPIO_setOutputHighOnPin(CW_OUT);
+    txKeyState = TX_KEY_DOWN;
+    si5351_RXTX_enable();
+}
+
+// This routine will stop transmission
+static void keyUp(void)
+{
+    extern uint8_t txKeyState;
+
+    Timer_A_clearCaptureCompareInterrupt(TIMER_A1_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0);
+    Timer_A_clear(TIMER_A1_BASE);  // reset QSK timer
+    Timer_A_enableCaptureCompareInterrupt(TIMER_A1_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0);
+    Timer_A_startCounter( TIMER_A1_BASE,TIMER_A_CONTINUOUS_MODE);
+    txKeyState = TX_KEY_UP;
+    GPIO_setOutputLowOnPin(CW_OUT);
+    delay_ms(5);
+    si5351_RXTX_enable();
 
 }

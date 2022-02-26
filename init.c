@@ -305,7 +305,7 @@ void initQSKTimer(uint16_t delay)
 
     Timer_A_initCompareModeParam initCompParam = {0};
     initCompParam.compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_0;
-    initCompParam.compareInterruptEnable = TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABLE;
+    initCompParam.compareInterruptEnable = TIMER_A_CAPTURECOMPARE_INTERRUPT_DISABLE;
     initCompParam.compareOutputMode = TIMER_A_OUTPUTMODE_OUTBITVALUE;
     initCompParam.compareValue = compareValue;
     Timer_A_initCompareMode(TIMER_A1_BASE, &initCompParam);
@@ -321,6 +321,8 @@ void TIMER1_A0_ISR (void)
 {
     // QSK timeout reached, so unmute audio and stop timer
     Timer_A_stop(TIMER_A1_BASE);
+    Timer_A_clearCaptureCompareInterrupt(TIMER_A1_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0);
+    Timer_A_disableCaptureCompareInterrupt(TIMER_A1_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0);
     selectAudioState(UNMUTE);
 }
 

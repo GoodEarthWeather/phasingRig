@@ -26,13 +26,13 @@ __interrupt void Port_4(void)
       case  4:
           // P4.1 = Dit key
           GPIO_clearInterrupt(DIT_KEY);
-          if (iambicMode == 0)  // only record dit key if dah key is not pressed (iambic)
+          if (iambicMode == DISABLED)  // only record dit key if dah key is not pressed (iambic)
               buttonPressed = BTN_PRESSED_DIT;
           break;                         // Vector  4:  Port 4 Bit 1
       case  6:
           // P4.1 = Dah key
           GPIO_clearInterrupt(DAH_KEY);
-          if (iambicMode == 0)  // only record dah key if dit key is not pressed (iambic)
+          if (iambicMode == DISABLED)  // only record dah key if dit key is not pressed (iambic)
               buttonPressed = BTN_PRESSED_DAH;
           break;                         // Vector  6:  Port 4 Bit 2
       case  8: break;                         // Vector  8:  Port 4 Bit 3
