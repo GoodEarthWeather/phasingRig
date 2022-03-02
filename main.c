@@ -23,6 +23,7 @@ uint8_t spotMode;  // enables sidetone for setting zero beat with incoming signa
 uint8_t txMode;  // enable or disable transmitter
 uint8_t receiveMode;  // indicates whether receiver is set for receiving CW (rxoffset added) or SSB (no offset)
 uint16_t qskDelay = 300;  // breakin delay in milliseconds
+uint8_t tuneMode; // for when tune button is pressed
 
 
 int main(void) {
@@ -52,6 +53,7 @@ int main(void) {
     // set defaults
 
     receiveMode = RXMODE_CW;
+    tuneMode = DISABLED;
     spotMode = DISABLED;
     freqMultiplier = 1000;
     selectedBand = BAND_40M;
@@ -196,6 +198,8 @@ int main(void) {
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_TUNE :
+            (tuneMode == DISABLED) ? (tuneMode = ENABLED) : (tuneMode = DISABLED);
+            setTuneMode();
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_MENU :

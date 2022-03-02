@@ -113,6 +113,8 @@ __interrupt void Port_3(void)
           // P3.7 = Tune button
           buttonPressed = BTN_PRESSED_TUNE;
           GPIO_clearInterrupt(BTN_TUNE);
+          // change interrupt edge to detect when button is released
+          P3IES ^= BIT7;
           break;                         // Vector  16:  Port 3 Bit 7
       default: break;
     }

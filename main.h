@@ -33,6 +33,7 @@ void updateQSKDelay(void);
 void initKeyTimer(uint8_t);
 void updateCWSpeed(void);
 void ditdah(uint8_t);
+void setTuneMode(void);
 
 void i2cSendRegister(uint8_t reg, uint8_t data);
 

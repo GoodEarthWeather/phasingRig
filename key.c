@@ -111,5 +111,33 @@ static void keyUp(void)
     GPIO_setOutputLowOnPin(CW_OUT);
     delay_ms(5);
     si5351_RXTX_enable();
+}
 
+// This routine will turn on the transmitter for tuning
+void setTuneMode(void)
+{
+    extern uint8_t tuneMode;
+    extern uint8_t txKeyState;
+    extern uint8_t txMode;
+
+    if (txMode == ENABLED)  // tune mode only if in txmode
+    {
+        if (tuneMode == ENABLED)
+        {
+            selectAudioState(MUTE);
+            Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE);  // start side tone
+            GPIO_setOutputHighOnPin(CW_OUT);
+            txKeyState = TX_KEY_DOWN;
+            si5351_RXTX_enable();
+        }
+        else
+        {
+            txKeyState = TX_KEY_UP;
+            GPIO_setOutputLowOnPin(CW_OUT);
+            Timer_A_stop(TIMER_A0_BASE);  // stop side tone
+            delay_ms(5);
+            si5351_RXTX_enable();
+            selectAudioState(UNMUTE);
+        }
+    }
 }
