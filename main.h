@@ -34,6 +34,7 @@ void initKeyTimer(uint8_t);
 void updateCWSpeed(void);
 void ditdah(uint8_t);
 void setTuneMode(void);
+void setTRSwitch(uint8_t);
 
 void i2cSendRegister(uint8_t reg, uint8_t data);
 
@@ -145,6 +146,7 @@ void initsi5351(void);
 #define MENU_FUNCTION_QSK_DELAY 0x3
 
 #define MAX_QSK_DELAY 800   // 800 ms
+#define MIN_QSK_DELAY 5    // 5 ms
 #define MAX_CW_SPEED 30   // wpm
 #define MIN_CW_SPEED 5    / wpm
 
@@ -173,5 +175,9 @@ void initsi5351(void);
 #define RXMODE_CW 0x0
 #define RXMODE_USB 0x1
 #define RXMODE_LSB 0x2
+
+// for tr switch
+#define TRANSMIT 0x0
+#define RECEIVE 0x1
 
 #endif /* MYINCLUDE_MAIN_H_ */

@@ -92,6 +92,7 @@ static void keyDown(void)
     Timer_A_stop(TIMER_A1_BASE);
     Timer_A_clearCaptureCompareInterrupt(TIMER_A1_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0);
     Timer_A_disableCaptureCompareInterrupt(TIMER_A1_BASE,TIMER_A_CAPTURECOMPARE_REGISTER_0);
+    setTRSwitch(TRANSMIT);
 
     GPIO_setOutputHighOnPin(CW_OUT);
     txKeyState = TX_KEY_DOWN;
@@ -110,6 +111,7 @@ static void keyUp(void)
     txKeyState = TX_KEY_UP;
     GPIO_setOutputLowOnPin(CW_OUT);
     delay_ms(5);
+    setTRSwitch(RECEIVE);
     si5351_RXTX_enable();
 }
 
@@ -125,6 +127,7 @@ void setTuneMode(void)
         if (tuneMode == ENABLED)
         {
             selectAudioState(MUTE);
+            setTRSwitch(TRANSMIT);
             Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE);  // start side tone
             GPIO_setOutputHighOnPin(CW_OUT);
             txKeyState = TX_KEY_DOWN;
@@ -136,8 +139,18 @@ void setTuneMode(void)
             GPIO_setOutputLowOnPin(CW_OUT);
             Timer_A_stop(TIMER_A0_BASE);  // stop side tone
             delay_ms(5);
+            setTRSwitch(RECEIVE);
             si5351_RXTX_enable();
             selectAudioState(UNMUTE);
         }
     }
+}
+
+// This routine will set the state of the tr switch
+void setTRSwitch(uint8_t state)
+{
+    if (state == RECEIVE)
+        GPIO_setOutputHighOnPin(TR_SWITCH); // receive mode
+    else if (state == TRANSMIT)
+        GPIO_setOutputLowOnPin(TR_SWITCH); // transmit mode
 }

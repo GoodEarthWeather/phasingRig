@@ -140,10 +140,10 @@ void initGPIO(void)
 
 
    // configure transceiver outputs - default all to low output except for mute
-   GPIO_setAsOutputPin(TR_SWITCH);
+   GPIO_setAsOutputPin(TR_SWITCH);  // receive=high, transmit=low; default to receive
    GPIO_setAsOutputPin(TR_MUTE);
    GPIO_setAsOutputPin(CW_OUT);
-   GPIO_setOutputLowOnPin(TR_SWITCH);
+   GPIO_setOutputHighOnPin(TR_SWITCH); // receive mode
    GPIO_setOutputHighOnPin(TR_MUTE);
    GPIO_setOutputLowOnPin(CW_OUT);
 
@@ -162,6 +162,7 @@ void initGPIO(void)
    GPIO_setAsOutputPin(FILTER_SELECT);
    GPIO_setAsOutputPin(SIDEBAND_SELECT);
    GPIO_setAsOutputPin(TXMODE_LED);
+
    GPIO_setOutputLowOnPin(TXMODE_LED);
 
    // enable and clear interrupts

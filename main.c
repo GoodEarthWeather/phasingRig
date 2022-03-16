@@ -40,6 +40,7 @@ int main(void) {
     wpm = 15;
     initKeyTimer(wpm);  // initialize keyer timer for 15 WMP
     initADC(BATTERY_MEASUREMENT);
+    setTRSwitch(RECEIVE);
 
     si5351_start();
 
@@ -95,6 +96,7 @@ int main(void) {
                 selectAudioState(MUTE);
                 if (txKeyState == TX_KEY_DOWN)
                 {
+                    setTRSwitch(TRANSMIT);
                     GPIO_setOutputHighOnPin(CW_OUT);
                 }
                 else  // txKeyState is TX_KEY_UP
@@ -102,6 +104,7 @@ int main(void) {
                     GPIO_setOutputLowOnPin(CW_OUT);
                     Timer_A_clear(TIMER_A1_BASE);  // reset QSK timer
                     Timer_A_startCounter( TIMER_A1_BASE,TIMER_A_CONTINUOUS_MODE);
+                    setTRSwitch(RECEIVE);
                 }
                 si5351_RXTX_enable();
             }
@@ -438,7 +441,7 @@ void updateQSKDelay(void)
     else if ( encoderCWCount < encoderCCWCount )  // decrease
     {
         deltaDelay = encoderCCWCount - encoderCWCount;
-        if ( qskDelay != 0 )
+        if ( qskDelay >= MIN_QSK_DELAY )
         {
             qskDelay -= 10*deltaDelay;
             updateDisplay(MENU_DISPLAY);
