@@ -26,7 +26,7 @@
 #define SI_CLK_SRC_PLL_B	0b00100000
 
 //#define XTAL_FREQ	27000000			// Crystal frequency
-#define XTAL_FREQ   26999386            // Crystal frequency
+//#define XTAL_FREQ   26999386            // Crystal frequency
 
 #define SI5351_ADDRESS 0x60  // 7 bit slave address for SI5351
 

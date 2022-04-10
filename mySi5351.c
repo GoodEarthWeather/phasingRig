@@ -42,7 +42,8 @@
  * In SSB mode, there is no receiver offset so that transmit and receive frequency is the same
  */
 #define RXOFFSET 608
-
+#define XTAL_FREQ 24895908
+//#define XTAL_FREQ 26999386
 
 ////////////////////////////////
 //
@@ -105,7 +106,7 @@ void si5351_set_RX_freq(unsigned long freq)
 {
 
   unsigned long  a, b, c;
-  unsigned long f_xtal = 26999386;
+  unsigned long f_xtal = XTAL_FREQ;
   double fdiv;  //division factor fvco/freq (will be integer part of a+b/c)
   double rm; //remainder
   unsigned long p1, p2, p3;
@@ -147,7 +148,7 @@ void si5351_set_TX_freq(unsigned long freq)
 {
 
   unsigned long  a, b, c;
-  unsigned long f_xtal = 26999386;
+  unsigned long f_xtal = XTAL_FREQ;
   double fdiv;  //division factor fvco/freq (will be integer part of a+b/c)
   double rm; //remainder
   unsigned long p1, p2, p3;
