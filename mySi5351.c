@@ -42,7 +42,7 @@
  * In SSB mode, there is no receiver offset so that transmit and receive frequency is the same
  */
 #define RXOFFSET 608
-#define XTAL_FREQ 24895908
+#define XTAL_FREQ 24899743
 //#define XTAL_FREQ 26999386
 
 ////////////////////////////////
@@ -72,7 +72,7 @@ void si5351_start(void)
   i2cSendRegister(CLK_ENABLE_CONTROL, 0xFE); // Enable only CLK0
 
   // Set VCOs of PLLA and PLLB to 891 MHz
-  a = 33;           // Division factor 900/27 MHz
+  a = 35;           // Division factor 900/25 MHz
   b = 0;            // Numerator, sets b/c=0
   c = 1048575;      //Max. resolution, but irrelevant in this case (b=0)
 
@@ -124,7 +124,7 @@ void si5351_set_RX_freq(unsigned long freq)
 
   // set frequency for SYNTH_MS_0 - CLK0 for QSD input
   a = b = c = 1048575;
-  fdiv = (double) (f_xtal * 33) / freq;
+  fdiv = (double) (f_xtal * 35) / freq;
   a = (unsigned long) fdiv;
   rm = fdiv - a;  //(equiv. b/c)
   b = rm * c;
@@ -155,7 +155,7 @@ void si5351_set_TX_freq(unsigned long freq)
 
   // set frequency for SYNTH_MS_1 - CLK1 for transmitter
   a = b = c = 1048575;
-  fdiv = (double) (f_xtal * 33) / freq;
+  fdiv = (double) (f_xtal * 35) / freq;
   a = (unsigned long) fdiv;
   rm = fdiv - a;  //(equiv. b/c)
   b = rm * c;
