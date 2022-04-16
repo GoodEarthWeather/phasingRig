@@ -64,6 +64,7 @@ void initsi5351(void);
 #define SYNTH_MS_2              58
 #define PLL_RESET              177
 #define XTAL_LOAD_CAP          183
+#define SSEN                   149
 
 
 #define RESET_PLL 1
