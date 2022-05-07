@@ -183,8 +183,15 @@ void si5351_RXTX_enable(void)
     extern uint8_t txKeyState;
 
     if (txKeyState == TX_KEY_DOWN)
-        //i2cSendRegister(CLK_ENABLE_CONTROL, 0b11111100);  // tx clock enabled, rx clock enabled
-        i2cSendRegister(CLK_ENABLE_CONTROL, 0b11111101);  // tx clock enabled, rx clock disabled
+    {
+        i2cSendRegister(CLK0_CONTROL, 0x8F);       // power down rx clock
+        i2cSendRegister(CLK1_CONTROL, 0x0F);       // power up tx clock
+        //i2cSendRegister(CLK_ENABLE_CONTROL, 0b11111101);  // tx clock enabled, rx clock disabled
+    }
     else
-        i2cSendRegister(CLK_ENABLE_CONTROL, 0b11111110);  // rx clock enabled, tx clock disabled
+    {
+        i2cSendRegister(CLK0_CONTROL, 0x0F);       // power up rx clock
+        i2cSendRegister(CLK1_CONTROL, 0x8F);       // power down tx clock
+        //i2cSendRegister(CLK_ENABLE_CONTROL, 0b11111110);  // rx clock enabled, tx clock disabled
+    }
 }

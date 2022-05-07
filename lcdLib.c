@@ -272,14 +272,6 @@ void updateDisplay(uint8_t field)
             case MENU_FUNCTION_CWSPEED :
                 setCWSpeedText();
                 break;
-            case MENU_FUNCTION_RXMODE :
-                if (receiveMode == RXMODE_CW)
-                    lcdSetText("RXMODE: CW",0,1);
-                else if (receiveMode == RXMODE_USB)
-                    lcdSetText("RXMODE: USB",0,1);
-                else
-                    lcdSetText("RXMODE: LSB",0,1);
-                break;
             case MENU_FUNCTION_QSK_DELAY :
                 lcdSetText("QSK: ",0,1);
                 result = number_to_string((uint32_t)qskDelay);

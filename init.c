@@ -120,7 +120,7 @@ void initGPIO(void)
        GPIO_PIN7
        );
 
-   // Band select, Mute, filter select, tune buttons
+   // Band select, Mute, filter select, rxmode buttons
    GPIO_setAsInputPin(
        GPIO_PORT_P3,
        GPIO_PIN1 + GPIO_PIN3 + GPIO_PIN4 + GPIO_PIN7
@@ -172,7 +172,7 @@ void initGPIO(void)
    GPIO_enableInterrupt(BTN_FILTER_SELECT);
    GPIO_enableInterrupt(BTN_BAND_SELECT);
    GPIO_enableInterrupt(BTN_SPOT);
-   GPIO_enableInterrupt(BTN_TUNE);
+   GPIO_enableInterrupt(BTN_RXMODE);
    GPIO_enableInterrupt(BTN_MENU);
    GPIO_enableInterrupt(STRAIGHT_KEY);
    GPIO_enableInterrupt(DIT_KEY);
@@ -184,7 +184,7 @@ void initGPIO(void)
    GPIO_clearInterrupt(BTN_FILTER_SELECT);
    GPIO_clearInterrupt(BTN_BAND_SELECT);
    GPIO_clearInterrupt(BTN_SPOT);
-   GPIO_clearInterrupt(BTN_TUNE);
+   GPIO_clearInterrupt(BTN_RXMODE);
    GPIO_clearInterrupt(BTN_MENU);
    GPIO_clearInterrupt(STRAIGHT_KEY);
    GPIO_clearInterrupt(DIT_KEY);

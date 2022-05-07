@@ -110,7 +110,7 @@ static void keyUp(void)
     Timer_A_startCounter( TIMER_A1_BASE,TIMER_A_CONTINUOUS_MODE);
     txKeyState = TX_KEY_UP;
     GPIO_setOutputLowOnPin(CW_OUT);
-    delay_ms(7);
+    delay_ms(5);
     setTRSwitch(RECEIVE);
     si5351_RXTX_enable();
 }

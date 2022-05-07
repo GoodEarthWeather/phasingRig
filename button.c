@@ -110,11 +110,9 @@ __interrupt void Port_3(void)
       case  12: break;                         // Vector  12:  Port 3 Bit 5
       case  14: break;                         // Vector  14:  Port 3 Bit 6
       case  16:
-          // P3.7 = Tune button
-          buttonPressed = BTN_PRESSED_TUNE;
-          GPIO_clearInterrupt(BTN_TUNE);
-          // change interrupt edge to detect when button is released
-          P3IES ^= BIT7;
+          // P3.7 = RXMODE button
+          buttonPressed = BTN_PRESSED_RXMODE;
+          GPIO_clearInterrupt(BTN_RXMODE);
           break;                         // Vector  16:  Port 3 Bit 7
       default: break;
     }

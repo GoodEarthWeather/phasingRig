@@ -113,30 +113,7 @@ int main(void) {
         // check encoder
         if ((encoderCWCount != 0) || (encoderCCWCount != 0))  // if true, the encoder knob was turned
         {
-            if (selectedMenuFunction == MENU_FUNCTION_RXMODE)
-            {
-                if (receiveMode == RXMODE_LSB)
-                {
-                    receiveMode = RXMODE_CW;
-                    (selectedBand == BAND_40M) ? (selectedSideband= LOWER_SIDEBAND) : (selectedSideband = UPPER_SIDEBAND);
-                }
-                else if (receiveMode == RXMODE_USB)
-                {
-                    receiveMode = RXMODE_LSB;
-                    selectedSideband = LOWER_SIDEBAND;
-                }
-                else
-                {
-                    receiveMode = RXMODE_USB;
-                    selectedSideband = UPPER_SIDEBAND;
-                }
-                selectSideband();
-                updateDisplay(MENU_DISPLAY);
-                updateDisplay(MODE_DISPLAY);
-                encoderCWCount = encoderCCWCount = 0;
-                si5351_set_RX_freq(si5351FreqOut);
-            }
-            else if (selectedMenuFunction == MENU_FUNCTION_QSK_DELAY)
+            if (selectedMenuFunction == MENU_FUNCTION_QSK_DELAY)
             {
                 updateQSKDelay();
                 initQSKTimer(qskDelay);
@@ -188,21 +165,48 @@ int main(void) {
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_SPOT :
-            if ( spotMode == DISABLED)  // button pressed to now put it in spot mode
+            if ( txMode == DISABLED)
             {
-                Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE);  // start side tone
-                spotMode = ENABLED;
+                if ( spotMode == DISABLED)  // button pressed to now put it in spot mode
+                {
+                    Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE);  // start side tone
+                    spotMode = ENABLED;
+                }
+                else
+                {
+                    Timer_A_stop(TIMER_A0_BASE);  // stop side tone
+                    spotMode = DISABLED;
+                }
             }
             else
             {
-                Timer_A_stop(TIMER_A0_BASE);  // stop side tone
-                spotMode = DISABLED;
+                (tuneMode == DISABLED) ? (tuneMode = ENABLED) : (tuneMode = DISABLED);
+                setTuneMode();
             }
             buttonPressed = BTN_PRESSED_NONE;
             break;
-        case BTN_PRESSED_TUNE :
-            (tuneMode == DISABLED) ? (tuneMode = ENABLED) : (tuneMode = DISABLED);
-            setTuneMode();
+        case BTN_PRESSED_RXMODE :
+            if (receiveMode == RXMODE_LSB)
+            {
+                receiveMode = RXMODE_CW;
+                (selectedBand == BAND_40M) ? (selectedSideband= LOWER_SIDEBAND) : (selectedSideband = UPPER_SIDEBAND);
+            }
+            else if (receiveMode == RXMODE_USB)
+            {
+                receiveMode = RXMODE_LSB;
+                selectedSideband = LOWER_SIDEBAND;
+            }
+            else
+            {
+                receiveMode = RXMODE_USB;
+                selectedSideband = UPPER_SIDEBAND;
+            }
+            selectAudioState(MUTE);
+            selectSideband();
+            updateDisplay(MODE_DISPLAY);
+            encoderCWCount = encoderCCWCount = 0;
+            si5351_set_RX_freq(si5351FreqOut);
+            selectAudioState(UNMUTE);
             buttonPressed = BTN_PRESSED_NONE;
             break;
         case BTN_PRESSED_MENU :
@@ -364,8 +368,6 @@ void selectMenuFunction(void)
         initADC(BATTERY_MEASUREMENT);
         break;
     case MENU_FUNCTION_CWSPEED :
-        break;
-    case MENU_FUNCTION_RXMODE :
         break;
     case MENU_FUNCTION_QSK_DELAY :
         break;
