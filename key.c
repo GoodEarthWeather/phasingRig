@@ -126,15 +126,22 @@ void setTuneMode(void)
     {
         if (tuneMode == ENABLED)
         {
+            keyDown();
+            Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE);  // start side tone
+            /*
             selectAudioState(MUTE);
             setTRSwitch(TRANSMIT);
             Timer_A_startCounter(TIMER_A0_BASE,TIMER_A_UP_MODE);  // start side tone
             GPIO_setOutputHighOnPin(CW_OUT);
             txKeyState = TX_KEY_DOWN;
             si5351_RXTX_enable();
+            */
         }
         else
         {
+            keyUp();
+            Timer_A_stop(TIMER_A0_BASE);  // stop side tone
+            /*
             txKeyState = TX_KEY_UP;
             GPIO_setOutputLowOnPin(CW_OUT);
             Timer_A_stop(TIMER_A0_BASE);  // stop side tone
@@ -142,6 +149,7 @@ void setTuneMode(void)
             setTRSwitch(RECEIVE);
             si5351_RXTX_enable();
             selectAudioState(UNMUTE);
+            */
         }
     }
 }
